@@ -52,6 +52,8 @@ const IC={
  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h8"/>',
  chev:'<path d="M9 6l6 6-6 6"/>',
  moon:'<path d="M20 14A8 8 0 1110 4a6 6 0 0010 10z"/>',
+ kible:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+ qibla:'<path d="M5 9l7-4 7 4v9H5z"/><path d="M5 12h14"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'
@@ -63,7 +65,7 @@ function confirmSheet(title,body,okText,fn){sheet(`<h3>${esc(title)}</h3><p clas
 
 /* ============ KAYIT ============ */
 const LK="nurokuma.v1";
-const DEF={t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
+const DEF={gruplar:[],aktifGrup:null,adim:"",t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
 let S=structuredClone(DEF);
 try{const l=JSON.parse(localStorage.getItem(LK)||"null");if(l)S=Object.assign(structuredClone(DEF),l)}catch(e){}
 const IDB={db:null,open(){return this.db?Promise.resolve(this.db):new Promise((res,rej)=>{const r=indexedDB.open("nurpdf",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>{this.db=r.result;res(r.result)};r.onerror=()=>rej(r.error)})},
@@ -76,9 +78,9 @@ applyTheme();
 function save(){S.t=Date.now();try{localStorage.setItem(LK,JSON.stringify(S))}catch(e){}}
 /* ============ YÖNLENDİRME ============ */
 let cur={v:"home",p:null};
-const TABS=[["home","Bugün","home"],["kuran","Kur'an","quran"],["vakit","Vakitler","clock"],["zikir","Zikir","tesbih"],["kitaplik","Kitaplık","books"]];
-const TITLES={home:"Bireysel Cüz Takip",kuran:"Kur'an-ı Kerîm",sure:"",cuz:"Hatim ve Plan",hadis:"Sahih Hadisler",cevsen:"Cevşen-ül Kebîr",tesbihat:"Namaz Tesbihatı",kitaplik:"Kitaplık",pdf:"",ayarlar:"Ayarlar",kayit:"Kaydettiklerim",duvar:"Telefon Ekranı",vakit:"Namaz Vakitleri",zikir:"Zikir",gunler:"Dini Günler",siyer:"Siyer-i Nebî",peygamber:"Peygamberler",sahabe:"Sahabeler",hava:"Hava Durumu",oku:""};
-const TABOF={sure:"kuran",cuz:"kuran",pdf:"kitaplik",hadis:"kitaplik",siyer:"kitaplik",peygamber:"kitaplik",sahabe:"kitaplik",cevsen:"zikir",tesbihat:"zikir",kayit:"home",duvar:"home",gunler:"home",hava:"vakit",ayarlar:"home"};
+const TABS=[["home","Bugün","home"],["kuran","Kur'an","quran"],["grup","Grup","group"],["vakit","Vakitler","clock"],["zikir","Zikir","tesbih"],["kitaplik","Kitaplık","books"]];
+const TITLES={home:"Bireysel Cüz Takip",kuran:"Kur'an-ı Kerîm",sure:"",cuz:"Hatim ve Plan",hadis:"Sahih Hadisler",cevsen:"Cevşen-ül Kebîr",tesbihat:"Namaz Tesbihatı",kitaplik:"Kitaplık",pdf:"",ayarlar:"Ayarlar",kayit:"Kaydettiklerim",duvar:"Telefon Ekranı",vakit:"Namaz Vakitleri",zikir:"Zikir",gunler:"Dini Günler",siyer:"Siyer-i Nebî",peygamber:"Peygamberler",sahabe:"Sahabeler",hava:"Hava Durumu",grup:"Grup okuma",kible:"Kıble Pusulası",oku:""};
+const TABOF={sure:"kuran",cuz:"kuran",pdf:"kitaplik",hadis:"kitaplik",siyer:"kitaplik",peygamber:"kitaplik",sahabe:"kitaplik",cevsen:"zikir",tesbihat:"zikir",kayit:"home",duvar:"home",gunler:"home",hava:"vakit",kible:"vakit",ayarlar:"home"};
 function go(h){location.hash=h}
 function parse(){const h=(location.hash||"#home").slice(1);const m=h.match(/^([a-z]+)(?:-(.+))?$/);return m&&TITLES[m[1]]!==undefined?{v:m[1],p:m[2]||null}:{v:"home",p:null}}
 window.addEventListener("hashchange",()=>{cur=parse();render();window.scrollTo(0,0)});
@@ -91,7 +93,7 @@ function render(){
   const on=TABOF[cur.v]||cur.v;
   $("#tabs").innerHTML=TABS.map(([v,l,i])=>`<button class="${on===v?"on":""}" data-go="${v}" ${on===v?'aria-current="page"':""}>${ic(i,23)}<span>${l}</span></button>`).join("");
   const el=$("#view");el.onclick=null;
-  ({home:vHome,kuran:vKuran,sure:vSure,cuz:vCuz,hadis:vHadis,cevsen:vCevsen,tesbihat:vTesbihat,kitaplik:vKitaplik,pdf:vPdf,ayarlar:vAyarlar,kayit:vKayit,duvar:vDuvar,vakit:vVakit,zikir:vZikir,gunler:vGunler,siyer:vSiyer,peygamber:vPeygamber,sahabe:vSahabe,hava:vHava}[cur.v]||vHome)(el);
+  ({home:vHome,kuran:vKuran,sure:vSure,cuz:vCuz,hadis:vHadis,cevsen:vCevsen,tesbihat:vTesbihat,kitaplik:vKitaplik,pdf:vPdf,ayarlar:vAyarlar,kayit:vKayit,duvar:vDuvar,vakit:vVakit,zikir:vZikir,gunler:vGunler,siyer:vSiyer,peygamber:vPeygamber,sahabe:vSahabe,hava:vHava,grup:vGrup,kible:vKible}[cur.v]||vHome)(el);
 }
 
 /* ============ FAVORİ / SEPET ============ */

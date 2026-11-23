@@ -20,7 +20,7 @@ a{color:var(--pri2)}
 .dot{position:absolute;top:4px;right:4px;min-width:16px;height:16px;border-radius:99px;background:#e0533d;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
 main{max-width:720px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom))}
 nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 2px calc(6px + env(safe-area-inset-bottom))}
-nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);padding:4px 6px;min-width:58px;cursor:pointer}
+nav.tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);padding:4px 2px;min-width:0;flex:1;cursor:pointer}
 nav.tabs button svg{width:23px;height:23px}
 nav.tabs button.on{color:var(--pri)}
 /* Günün ayeti — tezhipli çerçeve */
@@ -182,3 +182,63 @@ label.lb{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
  .dok{justify-content:flex-start}.dok>div{max-width:460px;opacity:.96}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ===== Ana ekran (yeni) ===== */
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:18px 16px 16px;margin-bottom:14px;color:#fff;background:radial-gradient(120% 90% at 85% 0%,var(--h2) 0%,var(--h1) 62%);box-shadow:0 14px 30px -18px rgba(0,0,0,.55)}
+.hero .pat{position:absolute;inset:0;opacity:.08;background-image:var(--star);background-size:52px;filter:brightness(3)}
+.hero>*{position:relative}
+.hero-ust{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.h-sel{font:600 20px/1.2 var(--serif)}.h-tar{font-size:13.5px;opacity:.85;margin-top:2px}.h-hic{font-size:13px;color:#e9c873;margin-top:1px}
+.h-il{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:99px;padding:6px 11px;font:600 12.5px var(--sans);cursor:pointer;white-space:nowrap}
+.h-vakit{display:flex;flex-direction:column;align-items:center;margin:16px 0 12px;cursor:pointer}
+.h-vakit span{font-size:13px;opacity:.85;letter-spacing:.2px}
+.h-vakit b{font:700 40px/1.1 var(--serif);font-variant-numeric:tabular-nums;margin-top:2px}
+.h-bos{text-align:center;opacity:.85;font-size:14px;margin:18px 0 6px}
+.h-hava{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.16);font-size:13px;cursor:pointer;min-height:24px}
+.h-hava:empty{display:none}.h-hava b{font-size:16px}.h-hava .hv-e{font-size:20px}.h-hava span:last-child{opacity:.85}
+.hizli{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.hizli button{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:6px;font:600 11.5px var(--sans);color:var(--ink);cursor:pointer}
+.hizli button span{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--soft);color:var(--pri)}
+.hizli button:active{transform:scale(.97)}
+.devam,.gk0,.dg{display:flex;align-items:center;gap:12px;cursor:pointer}
+.devam>div:nth-child(2),.gk0>div:nth-child(2),.dg>div:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column}
+.ico2{width:40px;height:40px;border-radius:12px;background:var(--soft);color:var(--pri);display:grid;place-items:center;flex:none}
+.dg-g{width:46px;height:46px;border-radius:12px;background:linear-gradient(150deg,var(--acc),#d9b45a);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;flex:none}
+.dg-g b{font:700 18px var(--serif)}.dg-g span{font-size:10px;margin-top:2px}
+.gk{cursor:pointer}
+.serit2{display:grid;grid-template-columns:repeat(30,1fr);gap:2px;margin:10px 0}
+.serit2 i{height:8px;border-radius:2px;background:rgba(255,255,255,.18)}.serit2 i.v{background:rgba(255,255,255,.45)}.serit2 i.d{background:#e9c873}
+.serit2.acik i{background:var(--line)}.serit2.acik i.v{background:color-mix(in srgb,var(--pri) 35%,var(--card))}.serit2.acik i.d{background:var(--acc)}
+/* ===== Grup ===== */
+.gh{padding:20px 18px 16px;text-align:center}.gh h2{font:600 22px var(--serif);margin:6px 0 6px;position:relative}.gh p{position:relative;opacity:.9;font-size:14.5px;margin:0}
+.gh-ic{position:relative;width:60px;height:60px;border-radius:18px;background:rgba(255,255,255,.14);display:grid;place-items:center;margin:0 auto}
+.gh-ust{position:relative;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.rozet{background:rgba(255,255,255,.14);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:600}.rozet.kod{background:#e9c873;color:#2b2210;letter-spacing:1.5px;cursor:pointer}
+.gh-say{position:relative;margin-top:12px}.gh-say b{font:700 38px var(--serif)}.gh-say span{opacity:.85;margin-left:4px}
+.gh-alt{position:relative;font-size:13px;opacity:.9;margin:4px 0 0}
+.benim2{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border:2px solid var(--acc)}
+.benim2>div:first-child{display:flex;flex-direction:column}.benim2 b{font:700 22px var(--serif);color:var(--pri)}.benim2.ok{border-color:var(--pri2)}
+.gizgara{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.gz{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;cursor:pointer;min-width:0;color:var(--ink)}
+.gz b{font:700 17px var(--serif);color:var(--pri)}.gz small{font-size:10.5px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 3px;color:var(--muted)}
+.gz.d{background:var(--pri);border-color:var(--pri)}.gz.d b{color:#f0dfb2}.gz.d small{color:#dfeee7}
+.gz.bos{border-style:dashed;background:transparent}.gz.ben{box-shadow:0 0 0 2.5px var(--acc)}
+.csec{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.csec button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 0;font-weight:700;cursor:pointer;color:var(--ink)}
+.csec button.on{background:var(--pri);color:#fff;border-color:var(--pri)}.csec button.dolu{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.kodin{text-align:center;font:700 26px var(--sans);letter-spacing:6px;text-transform:uppercase}
+.kodbuyuk{text-align:center;font:700 32px var(--sans);letter-spacing:8px;color:var(--pri);background:var(--soft);border-radius:14px;padding:10px;margin:8px 0}
+pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding:10px;font:13px/1.5 var(--sans);max-height:30vh;overflow:auto}
+.gsec{overflow-x:auto}.gsec button{white-space:nowrap}
+/* ===== Kıble ===== */
+.kible-k{background:radial-gradient(120% 90% at 50% 0%,var(--h2),var(--h1) 70%);border-radius:24px;padding:16px 14px 20px;color:#fff}
+.kb-ust{display:flex;justify-content:space-between;font-size:12.5px;opacity:.85;gap:8px}
+.pusula{position:relative;width:min(84vw,330px);aspect-ratio:1;margin:14px auto 6px}
+.pusula svg{width:100%;height:100%;transition:transform .08s linear}
+.pusula .dis{fill:rgba(255,255,255,.06);stroke:rgba(233,200,115,.6);stroke-width:2}.pusula .ic{fill:none;stroke:rgba(255,255,255,.14)}
+.pusula .tk{stroke:rgba(255,255,255,.35);stroke-width:1.2}.pusula .tu{stroke:#fff;stroke-width:2}
+.pusula text{fill:#fff;font:700 17px var(--sans);text-anchor:middle}.pusula text.kz{fill:#ff8a7a}
+.pusula .kbcizgi{stroke:#e9c873;stroke-width:3;stroke-dasharray:4 5}.pusula .kabe{fill:#1b1b1b;stroke:#e9c873;stroke-width:1.5}.pusula .kusak{fill:#e9c873}.pusula .merkez{fill:#e9c873}
+.ok-sabit{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid #e9c873;z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+.pusula.tamam .dis{fill:rgba(60,200,120,.22);stroke:#5be39a}
+.kb-derece{text-align:center}.kb-derece b{display:block;font:700 34px var(--serif)}.kb-derece span{font-size:14px;opacity:.9}
+@media (max-width:370px){.hizli button{font-size:10.5px}.gz small{font-size:9.5px}nav.tabs button{min-width:0;padding:4px 2px}}

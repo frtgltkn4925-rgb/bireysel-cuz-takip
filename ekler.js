@@ -126,7 +126,7 @@ async function vVakit(el){
     <div class="kn" style="margin-top:2px">${esc(hicriYaz(now))}</div>
     <div class="nx">${v?`${VAKIT_AD[v.i][1]} vaktine`:""}</div><div class="sayac" id="sayac">–</div>
     ${bug?vakitSatiri(bug,v&&v.t.getDate()===now.getDate()?v.i:-1):""}</section>
-   <div class="row wrap" style="gap:8px;margin-bottom:12px"><button class="btn ghost sm" id="il">${ic("pin",14)} Şehri değiştir</button><button class="btn ghost sm" id="ics">${ic("cal",14)} Vakit hatırlatıcılarını takvime ekle</button><button class="btn ghost sm" data-go="hava">${ic("sun",14)} Hava durumu</button></div>
+   <div class="row wrap" style="gap:8px;margin-bottom:12px"><button class="btn ghost sm" id="il">${ic("pin",14)} Şehri değiştir</button><button class="btn ghost sm" id="ics">${ic("cal",14)} Vakit hatırlatıcılarını takvime ekle</button><button class="btn ghost sm" data-go="hava">${ic("sun",14)} Hava durumu</button><button class="btn ghost sm" data-go="kible">${ic("kible",14)} Kıble</button></div>
    <h2 class="sec">${esc(ayAd)} <small>imsakiye</small></h2>
    <div class="card" style="padding:0;overflow:auto"><table class="tablo"><thead><tr><th>Gün</th>${VAKIT_AD.map(([,n])=>`<th>${n}</th>`).join("")}</tr></thead>
     <tbody>${ay.map(r=>`<tr class="${r[0]===now.getDate()?"on":""}"><td>${r[0]}</td>${r.slice(1).map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
@@ -238,33 +238,36 @@ const vSahabe=el=>kitapListe(el,SAHABELER,"sahabe","Sahabeler");
 async function vBugun(el){
   const d=GUNLUK[dayIdx()%GUNLUK.length],h=HADISLER[dayIdx()%HADISLER.length],now=new Date();
   const yak=diniGunler()[0];const bug0=new Date();bug0.setHours(0,0,0,0);
+  const gk=yak?Math.round((yak.d-bug0)/864e5):0;
+  const hizli=[["kuran","quran","Kur'an"],["kible","kible","Kıble"],["grup","group","Grup"],["zikir","tesbih","Zikirmatik"],["cuz","cuz","Hatim planı"],["vakit","clock","İmsakiye"],["kitaplik","books","Kitaplık"],["duvar","phone","Ekran resmi"]];
   el.innerHTML=`
-  <section class="frame vkt"><div class="pat"></div>
-   <div class="greet">${selam()} · ${now.toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long"})}</div>
-   <div class="kn" style="margin-top:2px">${esc(hicriYaz(now))}${S.il?" · "+esc(S.il.ad):""}</div>
-   <div id="vk">${S.il?`<div class="spin" style="border-top-color:#fff"></div>`:`<button class="secil" id="ilsec">${ic("pin",16)} Namaz vakitleri için şehrinizi seçin</button>`}</div></section>
-  <div class="big2"><div class="bigt" id="kd" data-go="${S.son?"sure-"+S.son.s+"-a"+S.son.a:"kuran"}"><b>${S.son?esc(SURELER[S.son.s-1][0]):"Kur'an-ı Kerîm"}</b><span>${S.son?S.son.a+". ayetten devam et":"Arapça, meal ve tefsir"}</span></div>
-   <div class="bigt alt" id="hv" data-go="hava"><b>Hava</b><span>${S.il?"Yükleniyor…":"Şehir seçin"}</span></div></div>
+  <section class="hero" id="hero"><div class="pat"></div>
+   <div class="hero-ust"><div><div class="h-sel">${selam()}</div><div class="h-tar">${now.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</div><div class="h-hic">${esc(hicriYaz(now))}</div></div>
+    <button class="h-il" id="ilsec">${ic("pin",14)} ${S.il?esc(S.il.ad.replace(" (konumum)","")):"Şehir seç"}</button></div>
+   <div id="vk">${S.il?`<div class="spin" style="border-top-color:#fff"></div>`:`<p class="h-bos">Namaz vakitleri ve hava durumu için şehrinizi seçin.</p>`}</div>
+   <div class="h-hava" id="hv"></div></section>
+  <div class="hizli">${hizli.map(([g,i,t])=>`<button data-go="${g}"><span>${ic(i,22)}</span>${t}</button>`).join("")}</div>
+  ${S.son?`<div class="card devam" data-go="sure-${S.son.s}-a${S.son.a}"><div class="ico2">${ic("bm",20)}</div><div><span class="muted small">Kaldığınız yer</span><b>${esc(SURELER[S.son.s-1][0])} · ${S.son.a}. ayet</b></div><span class="chev">${ic("chev",18)}</span></div>`:""}
+  <h2 class="sec">Grup okuma</h2>${grupKarti()}
   ${planKart()}
   <h2 class="sec">Günün ayeti</h2>
   <section class="frame"><div class="pat"></div><div class="ay">${esc(d.a)}</div><div class="ml">${esc(d.m)}</div><div class="kn">${esc(d.k)}</div>
-   <div class="acts"><button id="dOku">Surede oku</button><button id="dKay">${isFav({kaynak:d.k,metin:d.m})?"Kaydedildi":"Kaydet"}</button><button data-go="duvar">Telefon ekranı yap</button></div></section>
-  ${yak?`<div class="rows" style="margin-bottom:10px"><div class="rw" data-go="gunler"><div class="ico" style="color:var(--acc)">${ic(yak.kandil?"moon":"cal")}</div><div class="tx"><b>${esc(yak.ad)}</b><span>${yak.d.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})} · ${(()=>{const g=Math.round((yak.d-bug0)/864e5);return g<=0?"bugün":g===1?"yarın":g+" gün sonra"})()}</span></div><span class="chev">${ic("chev",18)}</span></div></div>`:""}
+   <div class="acts"><button id="dOku">Surede oku</button><button id="dKay">${isFav({kaynak:d.k,metin:d.m})?"Kaydedildi":"Kaydet"}</button><button data-go="duvar">Ekran resmi yap</button></div></section>
+  ${yak?`<div class="card dg" data-go="gunler"><div class="dg-g"><b>${gk<=0?"Bugün":gk}</b>${gk>0?"<span>gün</span>":""}</div><div><b>${esc(yak.ad)}</b><span class="muted small">${yak.d.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}</span></div><span class="chev">${ic("chev",18)}</span></div>`:""}
   <h2 class="sec">Günün hadisi</h2>
   <div class="card hadis"><div class="arx">${esc(h.a)}</div><p style="margin:6px 0;font-family:var(--serif)">${esc(h.m)}</p><span class="src">${esc(h.s)}</span></div>
-  <h2 class="sec">Okuma ve ibadet</h2>
-  <div class="rows">
-   ${[["cuz","cuz","Hatim ve okuma planı",`${Object.values(S.cuz).filter(c=>c.d).length}/30 cüz · ${S.hatim} hatim`],["siyer","risale","Siyer-i Nebî","Peygamberimizin hayatı"],["peygamber","books","Peygamberler","Kur'an'da adı geçen 25 peygamber"],["sahabe","group","Sahabeler","Örnek hayatlar"],["gunler","cal","Dini günler","Kandiller, bayramlar, Ramazan"],["kayit","bm","Kaydettiklerim",S.fav.length+" ayet ve hadis"],["duvar","phone","Telefon ekranı","Günün ayetiyle kilit ekranı"]].map(([g,i,t,s])=>`<div class="rw" data-go="${g}"><div class="ico">${ic(i)}</div><div class="tx"><b>${t}</b><span>${s}</span></div><span class="chev">${ic("chev",18)}</span></div>`).join("")}
-  </div>`;
+  <div class="rows" style="margin-top:14px">${[["siyer","risale","Siyer-i Nebî","Peygamberimizin hayatı"],["peygamber","books","Peygamberler","Kur'an'da adı geçen 25 peygamber"],["sahabe","group","Sahabeler","Örnek hayatlar"],["kayit","bm","Kaydettiklerim",S.fav.length+" ayet ve hadis"]].map(([g,i,t,s])=>`<div class="rw" data-go="${g}"><div class="ico">${ic(i)}</div><div class="tx"><b>${t}</b><span>${s}</span></div><span class="chev">${ic("chev",18)}</span></div>`).join("")}</div>`;
   el.querySelector("#dOku").onclick=()=>go(`sure-${d.s}-a${d.n}`);
   el.querySelector("#dKay").onclick=e=>{toggleFav({tip:"Ayet",kaynak:d.k,metin:d.m,ar:d.a});e.target.textContent=isFav({kaynak:d.k,metin:d.m})?"Kaydedildi":"Kaydet"};
   planBagla(el);
-  const ils=el.querySelector("#ilsec");ils&&(ils.onclick=()=>ilSec());
-  if(!S.il){el.querySelector("#hv").onclick=e=>{e.stopPropagation();ilSec()};return}
+  el.querySelector("#ilsec").onclick=()=>ilSec();
+  grupArkaPlan();
+  if(!S.il)return;
   try{const v=await sonrakiVakit();if(cur.v!=="home")return;const box=el.querySelector("#vk");
-    if(v){box.innerHTML=`<div class="nx">${VAKIT_AD[v.i][1]} vaktine</div><div class="sayac" id="sayac">–</div>${vakitSatiri(v.bug,v.t.getDate()===new Date().getDate()?v.i:-1)}`;box.onclick=()=>go("vakit");sayacBaslat(el,v)}}
-  catch(e){const box=el.querySelector("#vk");if(box)box.innerHTML=`<div class="greet" style="margin-top:8px">Vakitler için internet gerekli (bir kez).</div>`}
-  havaAl().then(hd=>{if(cur.v!=="home")return;const b=el.querySelector("#hv span");const [a,e]=havaAd(hd.current.weather_code);el.querySelector("#hv b").textContent=`${e} ${Math.round(hd.current.temperature_2m)}°`;b.textContent=`${a} · ${Math.round(hd.daily.temperature_2m_max[0])}°/${Math.round(hd.daily.temperature_2m_min[0])}°`}).catch(()=>{const b=el.querySelector("#hv span");if(b)b.textContent="Yüklenemedi"});
+    if(v){box.innerHTML=`<div class="h-vakit"><span>${VAKIT_AD[v.i][1]} vaktine</span><b id="sayac">–</b></div>${vakitSatiri(v.bug,v.t.getDate()===new Date().getDate()?v.i:-1)}`;box.onclick=()=>go("vakit");sayacBaslat(el,v)}}
+  catch(e){const box=el.querySelector("#vk");if(box)box.innerHTML=`<p class="h-bos">Vakitler için internet gerekli (bir kez).</p>`}
+  havaAl().then(hd=>{if(cur.v!=="home")return;const b=el.querySelector("#hv");if(!b)return;const [a,e]=havaAd(hd.current.weather_code);
+    b.innerHTML=`<span class="hv-e">${e}</span><b>${Math.round(hd.current.temperature_2m)}°</b><span>${a} · ${Math.round(hd.daily.temperature_2m_max[0])}° / ${Math.round(hd.daily.temperature_2m_min[0])}°</span>`;b.onclick=()=>go("hava")}).catch(()=>{});
 }
 
 /* ============ AYARLAR ============ */
@@ -309,4 +312,4 @@ async function kurulumGoster(){if(kurulu())return toast("Uygulama zaten kurulu")
 $("#ayar").onclick=()=>go("ayarlar");
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(e=>console.warn("SW",e));
 cur=parse();render();
-if(!S.il&&!ls.get("no.ilsoruldu")){ls.set("no.ilsoruldu","1");setTimeout(()=>ilSec(),400)}
+if(!S.il&&!ls.get("no.ilsoruldu")&&cur.v==="home"){ls.set("no.ilsoruldu","1");setTimeout(()=>ilSec(),400)}
