@@ -26,17 +26,52 @@ const SK_SAYFA=[[/(ana sayfa|anasayfa|bugün|başa dön|giriş)/,"home","Ana say
   [/zikir|tesbih|zikirmatik/,"zikir","Zikir"],[/hadis/,"hadisler","Hadis ansiklopedisi"],[/grup/,"grup","Grup okuma"],[/kitaplık|kitaplik|kitaplar/,"kitaplik","Kitaplık"],[/siyer/,"siyer","Siyer-i Nebî"],
   [/peygamber/,"peygamber","Peygamberler"],[/sahabe/,"sahabe","Sahabeler"],[/hava/,"hava","Hava durumu"],[/dini gün|kandil/,"gunler","Dini günler"],[/cevşen/,"cevsen","Cevşen"],
   [/ekran resmi|duvar kağıdı|duvar kâğıdı/,"duvar","Telefon ekranı"],[/ayarlar/,"ayarlar","Ayarlar"],[/hatim|plan/,"cuz","Hatim ve plan"],[/kuran|kur an|mushaf/,"kuran","Kur'an-ı Kerîm sure listesi"]];
-const SK_YARDIM="Şunları söyleyebilirsiniz: Yasin suresini oku. Beşinci cüzü dinle. Namaz vakitleri. Sıradaki vakit. Kıble. Zikir. Hadisler. Ana sayfa. Geri. Dur.";
+const SK_YARDIM="Şunları sorabilirsiniz: Namaza kaç dakika var. Akşam ezanı kaçta. Bugünkü vakitler. Hava nasıl. Yarın yağmur var mı. Saat kaç. Bugün ne günü. Sıradaki kandil ne zaman. Günün ayeti. Günün hadisi. Yasin suresini oku. Beşinci cüzü dinle. Kıble. Geri. Dur.";
+const skSaat=hhmm=>{const [h,m]=String(hhmm).split(":").map(Number);return m?`${h} ${String(m).padStart(2,"0")}`:`${h}`};
+const skSure_=dk=>{const sa=Math.floor(dk/60),d=dk%60;return (sa?sa+" saat ":"")+(d||!sa?d+" dakika":"")};
+const SK_VAKIT=[[/imsak|sabah|sahur/,0],[/gunes|guneş|dogus/,1],[/ogle|cuma namaz/,2],[/ikindi/,3],[/aksam|iftar/,4],[/yatsi/,5]];
+async function skBilgi(a){
+  const vakitSoru=/(namaz|vakit|ezan|imsak|sabah|ogle|ikindi|aksam|yatsi|iftar|sahur)/.test(a),zamanSoru=/(kac|ne zaman|kaldi|saat|var mi|ne kadar|siradaki|sonraki|bugunku|bugun)/.test(a);
+  if(vakitSoru&&(zamanSoru||/vakitler/.test(a))){
+    if(!S.il){skSoyle("Önce şehrinizi seçmeniz gerekiyor.");ilSec();return true}
+    try{const now=new Date(),bug=await vakitGun(now);if(!bug){skSoyle("Vakit bilgisi alınamadı.");return true}go("vakit");
+      if(/bugunku|hepsi|tum|butun|vakitler/.test(a)&&!/siradaki|sonraki|kac/.test(a)){skSoyle(`${S.il.ad} için bugünkü vakitler: `+VAKIT_AD.map(([,n],i)=>`${n} ${skSaat(bug[i+1])}`).join(", ")+".");return true}
+      const ozel=SK_VAKIT.find(([re])=>re.test(a));
+      if(ozel&&!/^(namaz|vakit)/.test(a.replace(/[^a-z ]/g,""))){const i=ozel[1];let t=saatDate(now,bug[i+1]),gun="Bugün";
+        if(t<now){const y=new Date(now);y.setDate(y.getDate()+1);const yb=await vakitGun(y).catch(()=>null);if(yb){t=saatDate(y,yb[i+1]);gun="Yarın"}}
+        const dk=Math.round((t-now)/60000);skSoyle(`${gun} ${VAKIT_AD[i][1].toLocaleLowerCase("tr")} vakti saat ${skSaat(`${t.getHours()}:${t.getMinutes()}`)}. ${skSure_(dk)} kaldı.`);return true}
+      const v=await sonrakiVakit();if(!v){skSoyle("Vakit bilgisi alınamadı.");return true}
+      const dk=Math.round((v.t-now)/60000);skSoyle(`${VAKIT_AD[v.i][1]} vaktine ${skSure_(dk)} var. Vakit saat ${skSaat(`${v.t.getHours()}:${v.t.getMinutes()}`)}.`);return true}
+    catch(e){skSoyle("Vakit bilgisi alınamadı. İnternet bağlantınızı kontrol edin.");return true}}
+  if(/(hava|yagmur|kar |kar$|sicaklik|derece|soguk|sicak|semsiye|ruzgar)/.test(a)){
+    if(!S.il){skSoyle("Hava durumu için önce şehrinizi seçmeniz gerekiyor.");ilSec();return true}
+    try{const d=await havaAl(),c=d.current,dl=d.daily;go("hava");const yarin=/yarin/.test(a),i=yarin?1:0;
+      const yag=dl.precipitation_probability_max[i],mx=Math.round(dl.temperature_2m_max[i]),mn=Math.round(dl.temperature_2m_min[i]);
+      let m=yarin?`Yarın ${S.il.ad} için hava ${havaAd(dl.weather_code[1])[0].toLocaleLowerCase("tr")}. En yüksek ${mx}, en düşük ${mn} derece.`
+        :`${S.il.ad} için şu an ${Math.round(c.temperature_2m)} derece, hava ${havaAd(c.weather_code)[0].toLocaleLowerCase("tr")}. Hissedilen ${Math.round(c.apparent_temperature)} derece. Bugün en yüksek ${mx}, en düşük ${mn} derece.`;
+      m+=yag!=null?` Yağış ihtimali yüzde ${yag}.`:"";if(yag>=50)m+=" Dışarı çıkarken şemsiye almayı unutmayın.";if((yarin?mn:c.apparent_temperature)<=0)m+=" Hava çok soğuk, sıkı giyinin.";
+      if(!yarin&&c.wind_speed_10m>=30)m+=` Rüzgâr kuvvetli, saatte ${Math.round(c.wind_speed_10m)} kilometre.`;skSoyle(m);return true}
+    catch(e){skSoyle("Hava durumu alınamadı. İnternet bağlantınızı kontrol edin.");return true}}
+  if(/saat kac|saat ne/.test(a)){const n=new Date();skSoyle(`Saat ${n.getHours()} ${String(n.getMinutes()).padStart(2,"0")}.`);return true}
+  if(/(bugun ne gun|bugun gunlerden|tarih|hicri|ayin kaci|bugun hangi gun)/.test(a)){const n=new Date();skSoyle(`Bugün ${n.toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric",weekday:"long"})}. Hicri takvime göre ${hicriYaz(n)}.`);return true}
+  if(/(kandil|bayram|dini gun|ramazan|arefe|asure|mevlid|regaib|mirac|berat|kadir gece)/.test(a)){
+    const l=diniGunler(),bug=new Date();bug.setHours(0,0,0,0);
+    const tr=a.match(/regaib|mirac|berat|kadir|ramazan bayram|kurban bayram|ramazan|arefe|asure|mevlid/),ara=tr?l.find(x=>skAn(x.ad).includes(tr[0])):l.find(x=>/kandil/.test(a)?x.kandil:true);
+    go("gunler");if(!ara){skSoyle("Yaklaşan dini gün bulunamadı.");return true}
+    const g=Math.round((ara.d-bug)/864e5);skSoyle(`${ara.ad}: ${ara.d.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}. ${g===0?"Bugün.":g===1?"Yarın.":g+" gün kaldı."}`);return true}
+  if(/gunun ayet|bugunun ayet/.test(a)){const d=GUNLUK[dayIdx()%GUNLUK.length];skSoyle(`Günün ayeti, ${d.k}: ${d.m}`);return true}
+  if(/gunun hadis|bugunun hadis/.test(a)){const h=HADISLER[dayIdx()%HADISLER.length];skSoyle(`Günün hadisi: ${h.m} ${String(h.s||"").split(";")[0]}.`);return true}
+  if(/kible|pusula/.test(a)){go("kible");skSoyle("Kıble pusulası açıldı. Ekrandaki başlat düğmesine dokunun, telefonu yere paralel tutun ve yavaşça dönün. Kıbleye döndüğünüzde telefon titrer.");return true}
+  if(/(hatim|plan|bugun ne kadar|kac sayfa)/.test(a)&&typeof planDurum==="function"){const d=planDurum();go("cuz");
+    skSoyle(d?`Okuma planınıza göre bugün günde ${d.gunluk} sayfa okumanız gerekiyor.`:"Henüz bir okuma planı kurmadınız. Hatim ve plan sayfası açıldı.");return true}
+  return false}
 async function skKomut(ham){const t=skNorm(ham);if(!t)return;const a=skAn(ham);
   const oku=document.querySelector(".oku");
   if(/^(dur|durdur|sus|bekle|kapat ses)/.test(a)){const b=oku&&oku.querySelector("#dinle");if(b&&b.textContent.includes("⏸"))b.click();try{speechSynthesis.cancel()}catch(e){}return}
   if(/^(devam|devam et|oynat|baslat)$/.test(a)){const b=oku&&oku.querySelector("#dinle");if(b){b.click();return}}
   if(/yardim|komutlar|ne diyebilirim|ne soyleyebilirim/.test(a))return skSoyle(SK_YARDIM);
   if(/^(geri|geri don|kapat|cik|cikis)$/.test(a)){if(oku){oku.querySelector("#kapat").click();return skSoyle("Okuma kapatıldı")}history.back();return skSoyle("Geri dönüldü")}
-  if(/(siradaki|sonraki|kacta|ne zaman).*(vakit|ezan|namaz)|(vakit|ezan|namaz).*(kacta|kaldi|ne zaman)/.test(a)){
-    if(!S.il)return skSoyle("Önce şehrinizi seçmeniz gerekiyor. Ayarlardan şehir seçebilirsiniz.");
-    try{const v=await sonrakiVakit();if(!v)return skSoyle("Vakit bilgisi alınamadı");const dk=Math.round((v.t-new Date())/60000),sa=Math.floor(dk/60);
-      return skSoyle(`${VAKIT_AD[v.i][1]} vakti saat ${v.t.getHours()} ${String(v.t.getMinutes()).padStart(2,"0")}. ${sa?sa+" saat ":""}${dk%60} dakika kaldı.`)}catch(e){return skSoyle("Vakit bilgisi alınamadı")}}
+  const cevap=await skBilgi(a);if(cevap)return;
   const sesli=/(dinle|oku|okut|baslat|cal)/.test(a),ac=/(^| )(ac|acar|goster|getir)/.test(a);
   if(/c[uü][zs]|(^| )guz/.test(a)){const n=/amme/.test(a)?30:skSayi(t);if(n>=1&&n<=30){if(oku)oku.querySelector("#kapat").click();const cal_=sesli||!ac;skSoyle(`${n}. cüz ${cal_?"okunuyor":"açıldı"}`);okuyucu(n,{dinle:cal_});return}}
   const s=skSureBul(ham);
