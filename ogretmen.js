@@ -27,25 +27,28 @@ function vOgretmen(el){
       <input class="in dp-sinif" data-k="s" data-i="${i}" value="${esc(c.s)}" placeholder="Sınıf" aria-label="${i+1}. ders sınıfı"></div>`}).join("")}</div>
    <details class="card" style="margin-top:10px"><summary><b>Ders saatleri</b> <span class="muted small">okulunuza göre değiştirin</span></summary>
      <div class="dp-saatler">${D.saat.map((s,i)=>`<label>${i+1}. ders <input type="time" class="in" data-sa="${i}" data-u="0" value="${s[0]}"> – <input type="time" class="in" data-sa="${i}" data-u="1" value="${s[1]}"></label>`).join("")}</div></details>
-   <div id="dpFotoAlan"></div>
-   <p class="muted small">Program ve fotoğraf yalnızca bu telefonda saklanır. Bildirim, uygulamayı açtığınızda ve ders saatleri değiştikçe (uygulama açıkken) güncellenir.</p>`;
+   <p class="muted small">Program yalnızca bu telefonda saklanır; fotoğraf kaydedilmez. Bildirim, uygulamayı açtığınızda ve ders saatleri değiştikçe (uygulama açıkken) güncellenir.</p>`;
   const kaydet=()=>{save();dersBildirimGuncelle(true)};
   el.querySelector("#dpGun").onclick=e=>{const b=e.target.closest("[data-g]");if(b)go("ogretmen-"+b.dataset.g)};
   el.querySelectorAll("[data-k]").forEach(inp=>inp.onchange=()=>{D.gun[sec][+inp.dataset.i][inp.dataset.k]=inp.value.trim();kaydet()});
   el.querySelectorAll("[data-sa]").forEach(inp=>inp.onchange=()=>{D.saat[+inp.dataset.sa][+inp.dataset.u]=inp.value;kaydet()});
   el.querySelector("#dpBil").onclick=dersBildirimAcKapa;
   el.querySelector("#dpFoto").onclick=dpFotoSec;
-  IDB.get("ders-foto").then(b=>{if(b&&cur.v==="ogretmen"){const u=URL.createObjectURL(b);el.querySelector("#dpFotoAlan").innerHTML=`<h2 class="sec">Programın fotoğrafı</h2><img class="dp-foto" src="${u}" alt="Ders programı fotoğrafı">`}}).catch(()=>{})}
-
+  IDB.del("ders-foto").catch(()=>{});}
 /* ----- Fotoğraftan okuma ----- */
 const DP_KISA={MAT:"Matematik",MATU:"Matematik Uygulamaları",MATUY:"Matematik Uygulamaları",REH:"Rehberlik",TÜR:"Türkçe",TUR:"Türkçe",TRK:"Türkçe",FEN:"Fen Bilimleri",FENU:"Fen Uygulamaları",SOS:"Sosyal Bilgiler",ING:"İngilizce",İNG:"İngilizce",DİN:"Din Kültürü",DIN:"Din Kültürü",DKAB:"Din Kültürü",BED:"Beden Eğitimi",BES:"Beden Eğitimi",MÜZ:"Müzik",MUZ:"Müzik",GÖR:"Görsel Sanatlar",GOR:"Görsel Sanatlar",TEK:"Teknoloji ve Tasarım",BİL:"Bilişim Teknolojileri",BIL:"Bilişim Teknolojileri",KUR:"Kur'an-ı Kerim",PEY:"Peygamberimizin Hayatı",TAR:"Tarih",İNK:"İnkılap Tarihi",INK:"İnkılap Tarihi",ARP:"Arapça",ALM:"Almanca",SEÇ:"Seçmeli",SEC:"Seçmeli"};
+function dpMesafe(a,b){let n=0;for(let i=0;i<Math.max(a.length,b.length);i++)if(a[i]!==b[i])n++;return n}
 function dpDersAdi(t){t=String(t||"").replace(/[|_—–~.,;:'"`*()]/g," ").replace(/\s+/g," ").trim();if(!t)return"";
+  t=t.split(" ").filter(w=>w.length>1||/\d/.test(w)).join(" ").replace(/^\d+\s+/,"");if(!t)return"";
+  {const ilk=t.split(" ")[0].toLocaleUpperCase("tr").replace(/\d+$/,"");if(t.split(" ").length===1&&ilk.length>=3&&ilk.length<=5&&!DP_KISA[ilk]){const yakin=Object.keys(DP_KISA).find(k=>k.length===3&&dpMesafe(ilk.slice(0,3),k)<=1&&ilk.length<=4);if(yakin)return DP_KISA[yakin]}}
   const k=t.toLocaleUpperCase("tr").replace(/\d+$/,"").replace(/\s/g,"");if(DP_KISA[k])return DP_KISA[k];
   const ilk=t.split(" ")[0].toLocaleUpperCase("tr").replace(/\d+$/,"");if(DP_KISA[ilk]&&t.split(" ").length===1)return DP_KISA[ilk];
   return t.length<=2?"":t.charAt(0).toLocaleUpperCase("tr")+t.slice(1).toLocaleLowerCase("tr")}
 // "6/G", "6G", "GG", "&F", "7ID" gibi okumaları sınıfa çevirir; sınıf düzeyi okunamazsa en sık görülen düzey kullanılır
 function dpSinifAyikla(t){const a=String(t||"").toLocaleUpperCase("tr").replace(/[^0-9A-ZÇĞİÖŞÜ\/]/g,"");if(!a)return null;
   let m=a.match(/^(1[0-2]|[1-9])\/?I?([A-ZÇĞİÖŞÜ])$/);if(m)return{n:m[1],h:m[2]};
+  m=a.match(/^([5-8])[0O]$/);if(m)return{n:m[1],h:"D"};
+  if(/^[A-ZÇĞİÖŞÜ]{2}$/.test(a)&&!DP_KISA[a]&&/^[a-zçğıöşü]?[A-Z]?[A-Za-z][A-Z]$/.test(String(t).trim()))return{n:null,h:a[1]};
   m=a.match(/^([GEB&SZTŞ])\/?([A-ZÇĞİÖŞÜ])$/);if(m)return{n:null,h:m[2]};
   if(a.length===1&&/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]/.test(String(t).trim())&&/[A-ZÇĞİÖŞÜ]/.test(a))return{n:null,h:a};
   return null}
@@ -53,16 +56,64 @@ function dpSiniflariDuzelt(T){const say={};T.flat().forEach(c=>{if(c&&c._n)say[c
   T.forEach(g=>g.forEach(c=>{if(c&&c._h){c.s=(c._n||(enSik?enSik[0]:"?"))+"/"+c._h}delete c._n;delete c._h}));return T}
 function dpHucre(metin){const sat=String(metin||"").split(/\n|\|/).map(x=>x.trim()).filter(x=>x&&/[0-9A-Za-zÇĞİÖŞÜçğıöşü]/.test(x));let sn=null,d=[];
   for(const l of sat){for(const p of l.split(/\s+/)){const s=!sn&&dpSinifAyikla(p);if(s){sn=s;continue}d.push(p)}}
-  const ders=dpDersAdi(d.join(" "));return{d:ders,s:"",_n:sn&&sn.n,_h:sn&&sn.h}}
+  let ders=dpDersAdi(d.join(" "));const bilinen=d.some(x=>DP_KISA[x.toLocaleUpperCase("tr").replace(/\d+$/,"")]);
+  if(ders&&!sn&&!bilinen&&ders.replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]/g,"").length<4)ders="";
+  if(!sn&&!bilinen&&ders.split(" ").every(w=>w.length<3))ders="";
+  return{d:ders,s:"",_n:sn&&sn.n,_h:sn&&sn.h}}
 
-function dpFotoSec(){const i=document.createElement("input");i.type="file";i.accept="image/*";i.setAttribute("capture","environment");
-  i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;try{await IDB.put("ders-foto",f)}catch(e){}dpOku(f)};i.click()}
-async function dpOku(f){
+function dpFotoSec(){const i=document.createElement("input");i.type="file";i.accept="image/*";
+  i.onchange=()=>{const f=i.files&&i.files[0];if(f)dpKirp(f)};i.click()}
+/* Fotoğrafta tablonun dört köşesini seçtirir; eğik çekilmiş fotoğrafı düzleştirip okur */
+async function dpKirp(f){
+  const im=await new Promise((res,rej)=>{const u=URL.createObjectURL(f),x=new Image();x.onload=()=>res(x);x.onerror=rej;x.src=u});
+  const el=document.createElement("div");el.className="dp-kirp";
+  el.innerHTML=`<div class="dp-kirp-ust"><b>Tablonun köşelerini ayarlayın</b><span>Dört yuvarlağı ders programı tablosunun köşelerine sürükleyin. Başlık ve imza kısmı dışarıda kalabilir.</span></div>
+   <div class="dp-kirp-alan"><canvas></canvas><svg></svg>${[0,1,2,3].map(i=>`<i data-k="${i}"></i>`).join("")}</div>
+   <div class="dp-kirp-alt"><button class="btn ghost" id="kVaz">Vazgeç</button><button class="btn acc" id="kOk">Oku ve tabloya aktar</button></div>`;
+  document.body.appendChild(el);document.body.style.overflow="hidden";
+  const alan=el.querySelector(".dp-kirp-alan"),cv=el.querySelector("canvas"),svg=el.querySelector("svg"),tut=[...el.querySelectorAll("i")];
+  const r=alan.getBoundingClientRect(),k=Math.min(r.width/im.width,r.height/im.height),w=im.width*k,h=im.height*k,ox=(r.width-w)/2,oy=(r.height-h)/2;
+  cv.width=w*devicePixelRatio;cv.height=h*devicePixelRatio;Object.assign(cv.style,{left:ox+"px",top:oy+"px",width:w+"px",height:h+"px"});cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+  // başlangıç: fotoğrafta en büyük açık renkli bölgeyi (kâğıdı/ekranı) tahmin etmeye çalışma; basitçe kenarlardan %8 içeride
+  let P=[[.08,.08],[.92,.08],[.92,.92],[.08,.92]].map(([a,b])=>[a*im.width,b*im.height]);
+  const ciz=()=>{tut.forEach((t,i)=>{t.style.left=(ox+P[i][0]*k)+"px";t.style.top=(oy+P[i][1]*k)+"px"});
+    svg.innerHTML=`<polygon points="${P.map(p=>`${ox+p[0]*k},${oy+p[1]*k}`).join(" ")}"/>`};ciz();
+  tut.forEach((t,i)=>{t.onpointerdown=e=>{e.preventDefault();t.setPointerCapture(e.pointerId);
+    t.onpointermove=m=>{const rr=alan.getBoundingClientRect();P[i]=[Math.max(0,Math.min(im.width,(m.clientX-rr.left-ox)/k)),Math.max(0,Math.min(im.height,(m.clientY-rr.top-oy)/k))];ciz()};
+    t.onpointerup=()=>{t.onpointermove=null}}});
+  const kapat=()=>{el.remove();document.body.style.overflow=""};
+  el.querySelector("#kVaz").onclick=kapat;
+  el.querySelector("#kOk").onclick=()=>{const c=dpDuzlestir(im,P);kapat();dpOku(c)}}
+function dpDuzlestir(im,P){
+  const d=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);let W=Math.max(d(P[0],P[1]),d(P[3],P[2])),H=Math.max(d(P[0],P[3]),d(P[1],P[2]));
+  const s=Math.min(2.2,2200/Math.max(W,H));W=Math.round(W*s);H=Math.round(H*s);
+  const kay=document.createElement("canvas");kay.width=im.width;kay.height=im.height;const kx=kay.getContext("2d");kx.drawImage(im,0,0);const src=kx.getImageData(0,0,im.width,im.height).data;
+  // hedef dikdörtgen → kaynak dörtgen eşlemesi (homografi)
+  const Hm=dpHomografi([[0,0],[W,0],[W,H],[0,H]],P);
+  const c=document.createElement("canvas");c.width=W;c.height=H;const cx=c.getContext("2d"),out=cx.createImageData(W,H),o=out.data,iw=im.width,ih=im.height;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const z=Hm[6]*x+Hm[7]*y+1,u=(Hm[0]*x+Hm[1]*y+Hm[2])/z,v=(Hm[3]*x+Hm[4]*y+Hm[5])/z;
+    const ui=u|0,vi=v|0,j=(y*W+x)*4;if(ui<0||vi<0||ui>=iw||vi>=ih){o[j]=o[j+1]=o[j+2]=255;o[j+3]=255;continue}
+    const q=(vi*iw+ui)*4,g=src[q]*.3+src[q+1]*.59+src[q+2]*.11;o[j]=o[j+1]=o[j+2]=g;o[j+3]=255}
+  cx.putImageData(out,0,0);
+  // kontrastı artır: arka planı beyaza, yazıyı siyaha çek (yerel eşik)
+  dpEsikle(c);return c}
+function dpHomografi(a,b){const A=[],B=[];for(let i=0;i<4;i++){const [x,y]=a[i],[u,v]=b[i];A.push([x,y,1,0,0,0,-x*u,-y*u]);B.push(u);A.push([0,0,0,x,y,1,-x*v,-y*v]);B.push(v)}
+  for(let i=0;i<8;i++){let m=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[m][i]))m=r;[A[i],A[m]]=[A[m],A[i]];[B[i],B[m]]=[B[m],B[i]];
+    for(let r=0;r<8;r++)if(r!==i){const f=A[r][i]/A[i][i];for(let c=i;c<8;c++)A[r][c]-=f*A[i][c];B[r]-=f*B[i]}}
+  return B.map((v,i)=>v/A[i][i])}
+function dpEsikle(c){const W=c.width,H=c.height,x=c.getContext("2d"),im=x.getImageData(0,0,W,H),p=im.data,g=new Float32Array(W*H);
+  for(let i=0;i<W*H;i++)g[i]=p[i*4];
+  const ii=new Float64Array((W+1)*(H+1));for(let y=0;y<H;y++){let s=0;for(let x2=0;x2<W;x2++){s+=g[y*W+x2];ii[(y+1)*(W+1)+x2+1]=ii[y*(W+1)+x2+1]+s}}
+  const R=Math.max(12,Math.round(Math.min(W,H)/40));
+  for(let y=0;y<H;y++)for(let x2=0;x2<W;x2++){const x0=Math.max(0,x2-R),y0=Math.max(0,y-R),x1=Math.min(W,x2+R+1),y1=Math.min(H,y+R+1),n=(x1-x0)*(y1-y0);
+    const m=(ii[y1*(W+1)+x1]-ii[y0*(W+1)+x1]-ii[y1*(W+1)+x0]+ii[y0*(W+1)+x0])/n,r=Math.min(1,g[y*W+x2]/(m*0.92+1)),v=Math.round(255*Math.pow(r,2.2)),j=(y*W+x2)*4;p[j]=p[j+1]=p[j+2]=v}
+  x.putImageData(im,0,0)}
+async function dpOku(kaynak){
   let iptal=false;
   sheet(`<h3>Program okunuyor</h3><p class="small" id="dpDurum">Yazı tanıma hazırlanıyor… İlk seferde birkaç dakika sürebilir.</p><div class="dp-bar"><i id="dpBar"></i></div><button class="btn full ghost" id="dpIptal" style="margin-top:12px">Vazgeç</button>`,(sh,close)=>{sh.querySelector("#dpIptal").onclick=()=>{iptal=true;close()}});
   const durum=t=>{const e=document.getElementById("dpDurum");if(e)e.textContent=t},bar=p=>{const e=document.getElementById("dpBar");if(e)e.style.width=Math.round(p*100)+"%"};
   try{await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js");
-    const img=await dpKucult(f);
+    const img=kaynak instanceof HTMLCanvasElement?kaynak:await dpKucult(kaynak);
     let izgaraModu=false;
     const w=await Tesseract.createWorker("tur",1,{logger:m=>{if(m.status==="recognizing text"){if(!izgaraModu){durum("Dersler okunuyor…");bar(m.progress)}}else if(/load|init/.test(m.status))durum("Yazı tanıma hazırlanıyor…")}});
     let tablo=null;const iz=dpIzgara(img);
@@ -92,7 +143,8 @@ async function dpIzgaraOku(w,cv,iz,ilerle){
   // gün satırlarını ilk sütundan bul
   const gunRe=[/^paz(artesi|artes)/i,/^sal/i,/^[çc]ar/i,/^per/i,/^cuma$/i],satirlar=[],toplam=(hy.length-1)*(vx.length-1);let say=0;
   for(let r=0;r<hy.length-1;r++){const t=(await hucre(r,0)).toLocaleLowerCase("tr").replace(/[^a-zçğıöşü]/g,"");ilerle(++say/toplam);const gi=gunRe.findIndex(re=>re.test(t));if(gi>=0&&satirlar[gi]==null)satirlar[gi]=r}
-  if(satirlar.filter(x=>x!=null).length<3)return null;
+  if(satirlar.filter(x=>x!=null).length<3){if(hy.length-1>=6){for(let i=0;i<5;i++)satirlar[i]=i+1}else return null}
+  for(let i=0;i<5;i++)if(satirlar[i]==null){const once=satirlar.slice(0,i).filter(x=>x!=null).pop();if(once!=null&&once+1<hy.length-1&&!satirlar.includes(once+1))satirlar[i]=once+1}
   const ilkSatir=Math.min(...satirlar.filter(x=>x!=null)),saatler=[];
   // başlık satırından ders saatlerini oku
   for(let c=1;c<vx.length-1;c++){const t=await hucre(Math.max(0,ilkSatir-1),c);ilerle(++say/toplam);const z=t.match(/\d{1,2}[:.]\d{2}/g);saatler.push(z&&z.length>=2?[z[0].replace(".",":").padStart(5,"0"),z[1].replace(".",":").padStart(5,"0")]:null)}

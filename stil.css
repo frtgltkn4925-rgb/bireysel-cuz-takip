@@ -313,3 +313,9 @@ pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding
 .dp-bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden}.dp-bar i{display:block;height:100%;width:0;background:var(--h1);transition:width .3s}
 .dp-onizle{overflow:auto;max-height:50vh}.dp-onizle table{border-collapse:collapse;font-size:12px;width:100%}.dp-onizle th,.dp-onizle td{border:1px solid var(--line);padding:4px;vertical-align:top}
 .dp-kart .ico{background:#e6ecf8;color:#2b4c8c}
+.dp-kirp{position:fixed;inset:0;z-index:80;background:#111;display:flex;flex-direction:column;color:#fff}
+.dp-kirp-ust{padding:calc(env(safe-area-inset-top) + 12px) 16px 10px}.dp-kirp-ust b{display:block;font-size:17px}.dp-kirp-ust span{font-size:13px;opacity:.75}
+.dp-kirp-alan{position:relative;flex:1;margin:6px 12px;touch-action:none}.dp-kirp-alan canvas,.dp-kirp-alan svg{position:absolute}.dp-kirp-alan svg{inset:0;width:100%;height:100%;pointer-events:none}
+.dp-kirp-alan polygon{fill:rgba(245,166,35,.15);stroke:#f5a623;stroke-width:2}
+.dp-kirp-alan i{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:rgba(245,166,35,.35);border:3px solid #f5a623;touch-action:none}
+.dp-kirp-alt{display:flex;gap:10px;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}.dp-kirp-alt .btn{flex:1}
