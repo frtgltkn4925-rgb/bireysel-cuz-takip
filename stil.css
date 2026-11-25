@@ -275,3 +275,17 @@ pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding
 .oku.yeni .goster{background:rgba(15,91,71,.88)}
 .he-kart .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .he-kart .acts button{background:var(--soft);border:0;color:var(--h1);border-radius:99px;padding:8px 14px;font:600 13.5px 'Manrope',sans-serif;cursor:pointer}
+/* Açılış */
+.acilis{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;cursor:pointer;opacity:0;transition:opacity .45s ease;
+ background:radial-gradient(ellipse at 50% 38%,#1a6b56 0%,#0c3e33 55%,#06241e 100%);color:#fff;text-align:center}
+.acilis.on{opacity:1}
+.acilis::before{content:"";position:absolute;inset:0;opacity:.08;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23f3d27a' stroke-width='1.4'%3E%3Cpath d='M40 6l9 25 25 9-25 9-9 25-9-25-25-9 25-9z'/%3E%3Crect x='22' y='22' width='36' height='36' transform='rotate(45 40 40)'/%3E%3C/g%3E%3C/svg%3E");background-size:80px}
+.ac-ic{position:relative;max-width:520px}
+.ac-ar{font-family:'Amiri Quran','Amiri',serif;direction:rtl;line-height:1.9}
+.ac-euzu{font-size:25px;color:#e9dcb4;margin-bottom:6px}
+.ac-besmele{font-size:clamp(28px,8.4vw,38px);white-space:nowrap;color:#f6d98a;text-shadow:0 2px 18px rgba(246,217,138,.35)}
+.ac-cizgi{width:160px;height:2px;margin:22px auto;background:linear-gradient(90deg,transparent,#f3d27a,transparent)}
+.ac-selam{font:500 20px/1.5 'Literata',Georgia,serif;margin:0 0 30px;color:#fff}
+.ac-ipucu{font:600 13px 'Manrope',sans-serif;color:rgba(255,255,255,.6);margin:0;animation:acNabiz 2s ease-in-out infinite}
+@keyframes acNabiz{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.acilis{transition:none}.ac-ipucu{animation:none}}

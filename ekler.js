@@ -132,7 +132,7 @@ async function vVakit(el){
     <tbody>${ay.map(r=>`<tr class="${r[0]===now.getDate()?"on":""}"><td>${r[0]}</td>${r.slice(1).map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
    <p class="muted small">Vakitler, Diyanet İşleri Başkanlığı'nın hesaplama yöntemiyle (Aladhan, yöntem 13) şehir merkezi için hesaplanır; Diyanet'in yayımladığı vakitlerden 1–2 dakika farklı olabilir. Güneş vaktinde namaz kılınmaz; güneş doğduktan yaklaşık 45 dakika sonra kerahat vakti biter.</p>`;
   sayacBaslat(el,v);
-  el.querySelector("#il").onclick=()=>ilSec();
+  el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();
   el.querySelector("#ics").onclick=()=>vakitIcsSheet();
 }
 function vakitIcsSheet(){
@@ -283,13 +283,16 @@ function vAyarlar(el){
    <label class="row between" style="margin-top:10px"><span>Meali göster (Elmalılı)</span><input type="checkbox" id="ml" ${S.meal?"checked":""}></label>
    <label class="row between" style="margin-top:8px"><span>Okunuşu göster</span><input type="checkbox" id="ok" ${S.okunus?"checked":""}></label>
    <label class="row between" style="margin-top:8px"><span>Tefsiri göster (Celâleyn)</span><input type="checkbox" id="tf" ${S.tefsir?"checked":""}></label></div>
+  <h2 class="sec">Açılış</h2>
+  <div class="card"><label class="row between"><span>Açılışta besmele ve selam</span><input type="checkbox" id="acs" ${S.acilis!==false?"checked":""}></label>
+   <p class="muted small" style="margin:6px 0 10px">Uygulama her açıldığında besmele hafız sesinden okunur, ardından “${ACILIS_SELAM}” denir.</p><button class="btn sm ghost" id="acd">Şimdi dinle</button></div>
   <div class="rows">
    <div class="rw" id="kur"><div class="ico">${ic("phone")}</div><div class="tx"><b>Uygulamayı telefona kur</b><span>Ana ekrandan açılsın, internetsiz çalışsın</span></div></div>
    <div class="rw" id="bk"><div class="ico">${ic("dl")}</div><div class="tx"><b>Yedek indir</b><span>Hatim, plan ve kayıtlarını dosyaya al</span></div></div>
    <div class="rw" id="rs"><div class="ico">${ic("plus")}</div><div class="tx"><b>Yedekten geri yükle</b><span>Daha önce indirdiğin .json dosyası</span></div></div></div>
   <h2 class="sec">Kaynaklar</h2>
-  <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali, Türkçe okunuş ve Celâleyn tefsiri: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div>`;
-  el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
+  <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali, Türkçe okunuş ve Celâleyn tefsiri: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Hadis Ansiklopedisi: HadeethEnc.com. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div>`;
+  el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
   el.querySelector("#tm").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tema=b.dataset.t;applyTheme();save();el.querySelectorAll(".th").forEach(t=>t.classList.toggle("on",t===b))};
   const fz=d=>{S.afs=Math.max(20,Math.min(50,S.afs+d));save();el.querySelector("#fs").textContent=S.afs;el.querySelector("#fx").style.fontSize=S.afs+"px"};
   el.querySelector("#fm").onclick=()=>fz(-2);el.querySelector("#fp").onclick=()=>fz(2);

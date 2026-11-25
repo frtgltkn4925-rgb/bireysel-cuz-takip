@@ -1,6 +1,6 @@
 // Bireysel Cüz Takip — internetsiz çalışma
-const SURUM = "no-v4";
-const KABUK = ["./", "./index.html", "./stil.css", "./veri.js", "./veri-ek.js", "./uygulama.js", "./okuyucu.js", "./ekler.js", "./grup.js", "./hadisler.js", "./kible.js", "./ayar.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./gizlilik.html"];
+const SURUM = "no-v5";
+const KABUK = ["./", "./index.html", "./stil.css", "./veri.js", "./veri-ek.js", "./uygulama.js", "./okuyucu.js", "./ekler.js", "./grup.js", "./hadisler.js", "./acilis.js", "./kible.js", "./ayar.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./gizlilik.html"];
 const KALICI = ["api.alquran.cloud", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 const GUNCEL = ["api.aladhan.com", "api.open-meteo.com", "hadeethenc.com"];
 const ATLA = ["script.google.com", "script.googleusercontent.com"];

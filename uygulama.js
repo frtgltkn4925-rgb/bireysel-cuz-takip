@@ -65,7 +65,7 @@ function confirmSheet(title,body,okText,fn){sheet(`<h3>${esc(title)}</h3><p clas
 
 /* ============ KAYIT ============ */
 const LK="nurokuma.v1";
-const DEF={gruplar:[],aktifGrup:null,adim:"",t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
+const DEF={acilis:true,gruplar:[],aktifGrup:null,adim:"",t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
 let S=structuredClone(DEF);
 try{const l=JSON.parse(localStorage.getItem(LK)||"null");if(l)S=Object.assign(structuredClone(DEF),l)}catch(e){}
 const IDB={db:null,open(){return this.db?Promise.resolve(this.db):new Promise((res,rej)=>{const r=indexedDB.open("nurpdf",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>{this.db=r.result;res(r.result)};r.onerror=()=>rej(r.error)})},
