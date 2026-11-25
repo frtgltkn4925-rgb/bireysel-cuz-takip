@@ -332,3 +332,6 @@ pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding
 .sk-balon.on{opacity:1;transform:none;pointer-events:auto}
 .sk-balon small{display:block;color:#f3d27a;font-size:13px;margin-bottom:4px}.sk-balon p{margin:0;font-size:15px;line-height:1.5}.sk-balon .sk-dinle{opacity:.7;font-style:italic}
 @media (prefers-reduced-motion:reduce){.sk-balon{transition:none}}
+/* İnternetsiz */
+.cd-serit{position:fixed;left:0;right:0;top:0;z-index:60;background:#6b4f12;color:#fff;font:600 12.5px 'Manrope',sans-serif;text-align:center;padding:calc(env(safe-area-inset-top) + 3px) 8px 4px;transform:translateY(-100%);transition:transform .25s}
+.cd-serit.on{transform:none}

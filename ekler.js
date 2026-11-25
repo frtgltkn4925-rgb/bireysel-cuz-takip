@@ -303,6 +303,7 @@ function vAyarlar(el){
    <label class="row between" style="margin-top:10px"><span>Meali göster (Elmalılı)</span><input type="checkbox" id="ml" ${S.meal?"checked":""}></label>
    <label class="row between" style="margin-top:8px"><span>Okunuşu göster</span><input type="checkbox" id="ok" ${S.okunus?"checked":""}></label>
    <label class="row between" style="margin-top:8px"><span>Tefsiri göster (Celâleyn)</span><input type="checkbox" id="tf" ${S.tefsir?"checked":""}></label></div>
+  <h2 class="sec">İnternetsiz kullanım</h2>${cdKart()}
   <h2 class="sec">Açılış</h2>
   <div class="card"><label class="row between"><span>Açılışta besmele ve selam</span><input type="checkbox" id="acs" ${S.acilis!==false?"checked":""}></label>
    <p class="muted small" style="margin:6px 0 10px">Uygulama her açıldığında besmele hafız sesinden okunur; “${ACILIS_SELAM}” yazısı ekranda görünür.</p><button class="btn sm ghost" id="acd">Şimdi dinle</button></div>
@@ -317,7 +318,7 @@ function vAyarlar(el){
    <div class="rw" id="rs"><div class="ico">${ic("plus")}</div><div class="tx"><b>Yedekten geri yükle</b><span>Daha önce indirdiğin .json dosyası</span></div></div></div>
   <h2 class="sec">Kaynaklar</h2>
   <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali, Türkçe okunuş ve Celâleyn tefsiri: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Hadis Ansiklopedisi: HadeethEnc.com. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div>`;
-  el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#skg").onchange=e=>{S.sesliKomut=e.target.checked;save();skGoster()};el.querySelector("#skc").onchange=e=>{S.sesliCevap=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
+  cdBagla(el);el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#skg").onchange=e=>{S.sesliKomut=e.target.checked;save();skGoster()};el.querySelector("#skc").onchange=e=>{S.sesliCevap=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
   el.querySelector("#tm").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tema=b.dataset.t;applyTheme();save();el.querySelectorAll(".th").forEach(t=>t.classList.toggle("on",t===b))};
   const fz=d=>{S.afs=Math.max(20,Math.min(50,S.afs+d));save();el.querySelector("#fs").textContent=S.afs;el.querySelector("#fx").style.fontSize=S.afs+"px"};
   el.querySelector("#fm").onclick=()=>fz(-2);el.querySelector("#fp").onclick=()=>fz(2);
