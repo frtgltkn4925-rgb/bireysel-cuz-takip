@@ -289,3 +289,12 @@ pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding
 .ac-ipucu{font:600 13px 'Manrope',sans-serif;color:rgba(255,255,255,.6);margin:0;animation:acNabiz 2s ease-in-out infinite}
 @keyframes acNabiz{50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){.acilis{transition:none}.ac-ipucu{animation:none}}
+/* Sesli komut */
+.sk-mik{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:40;width:62px;height:62px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;
+ background:var(--h1);color:#fff;box-shadow:0 8px 22px rgba(0,0,0,.28),0 0 0 3px rgba(255,255,255,.85)}
+.sk-mik.on{background:#c0262d;animation:skNabiz 1.1s ease-in-out infinite}
+.sk-mik:focus-visible{outline:3px solid #f3c64b;outline-offset:3px}
+@keyframes skNabiz{50%{box-shadow:0 0 0 14px rgba(192,38,45,.18),0 0 0 3px #fff}}
+.gizli-okunur{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sk-liste{margin:0;padding-left:18px;line-height:1.7}
+@media (prefers-reduced-motion:reduce){.sk-mik.on{animation:none}}

@@ -161,6 +161,7 @@ async function okuyucu(k,opt={}){
       if(p){const cb=k===1?1:2+(k-1)*20,ct=k===1?21:k===30?23:20;uP.textContent=`Sayfa ${p} • ${k}. Cüz (${p-cb+1}/${ct})`}};
     M.addEventListener("scroll",()=>{if(ustT)return;ustT=requestAnimationFrame(()=>{ustT=0;ustYaz()})},{passive:true});
     ustYaz();sayfaMeta().then(()=>{if(el.isConnected)ustYaz()});
+    if(opt.dinle){const i=opt.sure?liste.findIndex(x=>x.s===opt.sure&&x.n===1):0;kayDur();cal(Math.max(0,i))}
   }catch(e){M.innerHTML=`<p class="sol" style="text-align:center;margin-top:40px">Arapça metin yüklenemedi; internet bağlantısını kontrol edin.<br><br><a href="https://kuran.diyanet.gov.tr/mushaf" target="_blank" rel="noopener">Diyanet Kur'an Portalı'nda aç</a></p>`}
 }
 

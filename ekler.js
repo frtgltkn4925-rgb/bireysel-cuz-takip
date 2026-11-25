@@ -34,14 +34,17 @@ function sayfaCuzu(p){let k=1;CUZ_SAYFA.forEach((s,i)=>{if(p>=s)k=i+1});return k
 const ikiH=n=>String(n).padStart(2,"0");
 const icsT=d=>`${d.getFullYear()}${ikiH(d.getMonth()+1)}${ikiH(d.getDate())}T${ikiH(d.getHours())}${ikiH(d.getMinutes())}00`;
 const icsEsc=s=>String(s).replace(/[\\,;]/g,m=>"\\"+m).replace(/\n/g,"\\n");
-function icsIndir(olaylar,ad){
+function icsIndir(olaylar,ad,ezan){
   const now=icsT(new Date());
   const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Bireysel Cüz Takip//TR","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
-  olaylar.forEach((o,i)=>{L.push("BEGIN:VEVENT",`UID:${now}-${i}@nurokuma`,`DTSTAMP:${now}`,`DTSTART:${icsT(o.t)}`,`DTEND:${icsT(new Date(o.t.getTime()+(o.dk||15)*60000))}`,`SUMMARY:${icsEsc(o.b)}`);
+  olaylar.forEach((o,i)=>{L.push("BEGIN:VEVENT",`UID:${o.uid||now+"-"+i+"@nurokuma"}`,`DTSTAMP:${now}`,`DTSTART:${icsT(o.t)}`,`DTEND:${icsT(new Date(o.t.getTime()+(o.dk||15)*60000))}`,`SUMMARY:${icsEsc(o.b)}`);
     if(o.a)L.push(`DESCRIPTION:${icsEsc(o.a)}`);if(o.r)L.push("RRULE:"+o.r);
     L.push("BEGIN:VALARM","ACTION:DISPLAY",`DESCRIPTION:${icsEsc(o.b)}`,`TRIGGER:${o.once||"PT0M"}`,"END:VALARM","END:VEVENT")});
   L.push("END:VCALENDAR");
   indir(new Blob([L.join("\r\n")],{type:"text/calendar"}),ad);
+  if(ezan)return sheet(`<h3>Son adım: takvime ekleyin</h3><ol class="small" style="padding-left:18px;line-height:1.6"><li>İnen <b>${esc(ad)}</b> dosyasına dokunun (bildirimden ya da Dosyalarım → İndirilenler).</li><li><b>Samsung Takvim</b> ya da <b>Google Takvim</b> ile açın, “Ekle / İçe aktar” deyin.</li></ol>
+   <p class="small"><b>Ezan sesi için:</b> Telefonunuzda bir ezan ses dosyası varsa Takvim → ☰ → ⚙ Ayarlar → Bildirimler → Ses kısmından onu seçin. Seçmezseniz telefonun bildirim sesi çalar.</p>
+   <p class="muted small">Abonelik bitmeden 10 gün önce Vakitler sayfasında “Yenile” düğmesi çıkar. Vazgeçerseniz etkinlikleri takvimden silebilirsiniz.</p><button class="btn full" id="tm">Tamam</button>`,(sh,c)=>{sh.querySelector("#tm").onclick=c});
   sheet(`<h3>Takvime ekle</h3><p class="small">İnen <b>${esc(ad)}</b> dosyasına dokunun ve telefonun takvim uygulamasıyla açın (Google Takvim veya Samsung Takvim). “Ekle / İçe aktar” deyin.</p><p class="muted small">Hatırlatmalar takvim uygulaması üzerinden gelir; uygulama kapalıyken de çalışır. Vazgeçerseniz takvimden silebilirsiniz.</p><button class="btn full" id="tm">Tamam</button>`,(sh,c)=>{sh.querySelector("#tm").onclick=c})}
 
 /* ============ OKUMA PLANI ============ */
@@ -126,24 +129,38 @@ async function vVakit(el){
     <div class="kn" style="margin-top:2px">${esc(hicriYaz(now))}</div>
     <div class="nx">${v?`${VAKIT_AD[v.i][1]} vaktine`:""}</div><div class="sayac" id="sayac">–</div>
     ${bug?vakitSatiri(bug,v&&v.t.getDate()===now.getDate()?v.i:-1):""}</section>
-   <div class="row wrap" style="gap:8px;margin-bottom:12px"><button class="btn ghost sm" id="il">${ic("pin",14)} Şehri değiştir</button><button class="btn ghost sm" id="ics">${ic("cal",14)} Vakit hatırlatıcılarını takvime ekle</button><button class="btn ghost sm" data-go="hava">${ic("sun",14)} Hava durumu</button><button class="btn ghost sm" data-go="kible">${ic("kible",14)} Kıble</button></div>
+   ${ezanKart()}
+   <div class="row wrap" style="gap:8px;margin-bottom:12px"><button class="btn ghost sm" id="il">${ic("pin",14)} Şehri değiştir</button><button class="btn ghost sm" data-go="hava">${ic("sun",14)} Hava durumu</button><button class="btn ghost sm" data-go="kible">${ic("kible",14)} Kıble</button></div>
    <h2 class="sec">${esc(ayAd)} <small>imsakiye</small></h2>
    <div class="card" style="padding:0;overflow:auto"><table class="tablo"><thead><tr><th>Gün</th>${VAKIT_AD.map(([,n])=>`<th>${n}</th>`).join("")}</tr></thead>
     <tbody>${ay.map(r=>`<tr class="${r[0]===now.getDate()?"on":""}"><td>${r[0]}</td>${r.slice(1).map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
    <p class="muted small">Vakitler, Diyanet İşleri Başkanlığı'nın hesaplama yöntemiyle (Aladhan, yöntem 13) şehir merkezi için hesaplanır; Diyanet'in yayımladığı vakitlerden 1–2 dakika farklı olabilir. Güneş vaktinde namaz kılınmaz; güneş doğduktan yaklaşık 45 dakika sonra kerahat vakti biter.</p>`;
   sayacBaslat(el,v);
-  el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();
-  el.querySelector("#ics").onclick=()=>vakitIcsSheet();
+  el.querySelector("#il").onclick=()=>ilSec();
+  el.querySelector("#ezan").onclick=()=>vakitIcsSheet();
 }
+const EZAN_AD=["Sabah ezanı (imsak)","Güneş doğuşu","Öğle ezanı","İkindi ezanı","Akşam ezanı","Yatsı ezanı"];
+function ezanKart(){const e=S.ezan,kalan=e?Math.ceil((e.bitis-Date.now())/864e5):0;
+  const durum=!e?"Her vakitte telefonunuz bildirim versin. Uygulama kapalıyken de çalışır.":kalan>0?`${esc(e.il)} için ${new Date(e.bitis).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})} tarihine kadar açık${kalan<=10?" · yenileme zamanı yaklaştı":""}.`:"Süresi doldu, yenilemeniz gerekiyor.";
+  return `<div class="card ezan-kart ${e&&kalan>10?"acik":""}"><div class="row between" style="gap:10px"><div><b>${ic("bell",16)} Ezan aboneliği</b><div class="muted small" style="margin-top:4px">${durum}</div></div>
+   <button class="btn sm ${e&&kalan>10?"ghost":"acc"}" id="ezan" style="white-space:nowrap;flex:none">${!e?"Abone ol":kalan>10?"Ayarla":"Yenile"}</button></div></div>`}
 function vakitIcsSheet(){
-  sheet(`<h3>Vakit hatırlatıcıları</h3><p class="muted small">Seçtiğiniz vakitler önümüzdeki 30 gün için takviminize eklenir; telefon her vakitte bildirim verir.</p>
-   ${VAKIT_AD.map(([k,n],i)=>`<label class="row between" style="padding:6px 0"><span>${n}</span><input type="checkbox" data-v="${i}" ${i===1?"":"checked"}></label>`).join("")}
-   <label class="lb">Kaç dakika önce hatırlatsın?</label><select class="in" id="once"><option value="0">Vakit girince</option><option value="5">5 dakika önce</option><option value="10">10 dakika önce</option><option value="15">15 dakika önce</option></select>
-   <button class="btn full" id="ok" style="margin-top:12px">Takvim dosyasını indir</button>`,(sh,close)=>{
+  if(!S.il){ilSec();return}
+  sheet(`<h3>Ezan aboneliği</h3><p class="muted small">Seçtiğiniz vakitler ${esc(S.il.ad)} için telefonunuzun takvimine eklenir. Her vakit girdiğinde telefon bildirim verir.</p>
+   ${EZAN_AD.map((n,i)=>`<label class="row between" style="padding:6px 0"><span>${n}</span><input type="checkbox" data-v="${i}" ${i===1?"":"checked"}></label>`).join("")}
+   <label class="lb">Ne kadar süreyle?</label><select class="in" id="sure"><option value="30">1 ay</option><option value="91">3 ay</option><option value="182">6 ay</option><option value="365" selected>1 yıl</option></select>
+   <label class="lb">Bildirim ne zaman gelsin?</label><select class="in" id="once"><option value="0">Vakit girince</option><option value="5">5 dakika önce</option><option value="10">10 dakika önce</option><option value="15">15 dakika önce</option></select>
+   <button class="btn full acc" id="ok" style="margin-top:14px">Takvime ekle</button>
+   <p class="muted small" style="margin-top:10px">Aynı dosyayı tekrar eklerseniz takvim eski kayıtları günceller, çift bildirim gelmez.</p>`,(sh,close)=>{
     sh.querySelector("#ok").onclick=async()=>{const sec=[...sh.querySelectorAll("[data-v]")].filter(c=>c.checked).map(c=>+c.dataset.v);if(!sec.length)return toast("En az bir vakit seçin");
-      const once=+sh.querySelector("#once").value;close();toast("Hazırlanıyor…");const olay=[];const d=new Date();d.setHours(0,0,0,0);
-      try{for(let g=0;g<30;g++){const gun=new Date(d);gun.setDate(d.getDate()+g);const r=await vakitGun(gun);if(!r)continue;for(const i of sec){const t=saatDate(gun,r[i+1]);if(t>new Date())olay.push({t,b:`🕌 ${VAKIT_AD[i][1]} vakti`,a:`${S.il.ad} · ${r[i+1]}`,dk:10,once:once?`-PT${once}M`:"PT0M"})}}
-        icsIndir(olay,`namaz-vakitleri-${slug(S.il.ad)}.ics`)}catch(e){toast("Vakitler alınamadı; internet bağlantısını kontrol edin")}}})}
+      const once=+sh.querySelector("#once").value,gunSay=+sh.querySelector("#sure").value,btn=sh.querySelector("#ok");btn.disabled=true;
+      const olay=[];const d=new Date();d.setHours(0,0,0,0);const ilk=slug(S.il.ad);
+      try{for(let g=0;g<gunSay;g++){const gun=new Date(d);gun.setDate(d.getDate()+g);if(g%15===0)btn.textContent=`Hazırlanıyor… %${Math.round(g/gunSay*100)}`;
+          const r=await vakitGun(gun);if(!r)continue;
+          for(const i of sec){const t=saatDate(gun,r[i+1]);if(t>new Date())olay.push({t,b:`🕌 ${EZAN_AD[i]}`,a:`${S.il.ad} · ${r[i+1]}`,dk:10,once:once?`-PT${once}M`:"PT0M",uid:`${icsT(gun).slice(0,8)}-${i}-${ilk}@bct-ezan`})}}
+        const son=new Date(d);son.setDate(d.getDate()+gunSay);S.ezan={bitis:son.getTime(),il:S.il.ad,vakit:sec};save();close();
+        icsIndir(olay,`ezan-${ilk}.ics`,true);if(cur.v==="vakit")render()}
+      catch(e){btn.disabled=false;btn.textContent="Takvime ekle";toast("Vakitler alınamadı; internet bağlantısını kontrol edin")}}})}
 
 /* ============ HAVA DURUMU ============ */
 const HAVA={0:["Açık","☀️"],1:["Az bulutlu","🌤️"],2:["Parçalı bulutlu","⛅"],3:["Kapalı","☁️"],45:["Sisli","🌫️"],48:["Kırağılı sis","🌫️"],51:["Hafif çisenti","🌦️"],53:["Çisenti","🌦️"],55:["Yoğun çisenti","🌧️"],56:["Dondurucu çisenti","🌧️"],57:["Dondurucu çisenti","🌧️"],61:["Hafif yağmur","🌦️"],63:["Yağmur","🌧️"],65:["Şiddetli yağmur","🌧️"],66:["Dondurucu yağmur","🌧️"],67:["Dondurucu yağmur","🌧️"],71:["Hafif kar","🌨️"],73:["Kar","🌨️"],75:["Yoğun kar","❄️"],77:["Kar taneleri","🌨️"],80:["Hafif sağanak","🌦️"],81:["Sağanak","🌧️"],82:["Şiddetli sağanak","⛈️"],85:["Kar sağanağı","🌨️"],86:["Yoğun kar sağanağı","❄️"],95:["Gök gürültülü fırtına","⛈️"],96:["Dolulu fırtına","⛈️"],99:["Dolulu fırtına","⛈️"]};
@@ -285,14 +302,19 @@ function vAyarlar(el){
    <label class="row between" style="margin-top:8px"><span>Tefsiri göster (Celâleyn)</span><input type="checkbox" id="tf" ${S.tefsir?"checked":""}></label></div>
   <h2 class="sec">Açılış</h2>
   <div class="card"><label class="row between"><span>Açılışta besmele ve selam</span><input type="checkbox" id="acs" ${S.acilis!==false?"checked":""}></label>
-   <p class="muted small" style="margin:6px 0 10px">Uygulama her açıldığında besmele hafız sesinden okunur, ardından “${ACILIS_SELAM}” denir.</p><button class="btn sm ghost" id="acd">Şimdi dinle</button></div>
+   <p class="muted small" style="margin:6px 0 10px">Uygulama her açıldığında besmele hafız sesinden okunur; “${ACILIS_SELAM}” yazısı ekranda görünür.</p><button class="btn sm ghost" id="acd">Şimdi dinle</button></div>
+  <h2 class="sec">Sesli komut</h2>
+  <div class="card"><label class="row between"><span>Mikrofon düğmesini göster</span><input type="checkbox" id="skg" ${S.sesliKomut!==false?"checked":""}></label>
+   <label class="row between" style="margin-top:8px"><span>Komutlara sesli cevap ver</span><input type="checkbox" id="skc" ${S.sesliCevap!==false?"checked":""}></label>
+   <p class="muted small" style="margin:8px 0 6px">Sağ alttaki mikrofona dokunup konuşun. Örnekler:</p>
+   <ul class="small sk-liste"><li>“Yasin suresini oku” · “Mülk suresini dinle”</li><li>“Beşinci cüzü dinle” · “Yirmi dördüncü cüz”</li><li>“Sıradaki vakit” · “Namaz vakitleri” · “Kıble”</li><li>“Zikir” · “Hadisler” · “Ana sayfa” · “Geri”</li><li>Okurken: “Dur” · “Devam” · “Yardım”</li></ul></div>
   <div class="rows">
    <div class="rw" id="kur"><div class="ico">${ic("phone")}</div><div class="tx"><b>Uygulamayı telefona kur</b><span>Ana ekrandan açılsın, internetsiz çalışsın</span></div></div>
    <div class="rw" id="bk"><div class="ico">${ic("dl")}</div><div class="tx"><b>Yedek indir</b><span>Hatim, plan ve kayıtlarını dosyaya al</span></div></div>
    <div class="rw" id="rs"><div class="ico">${ic("plus")}</div><div class="tx"><b>Yedekten geri yükle</b><span>Daha önce indirdiğin .json dosyası</span></div></div></div>
   <h2 class="sec">Kaynaklar</h2>
   <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali, Türkçe okunuş ve Celâleyn tefsiri: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Hadis Ansiklopedisi: HadeethEnc.com. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div>`;
-  el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
+  el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#skg").onchange=e=>{S.sesliKomut=e.target.checked;save();skGoster()};el.querySelector("#skc").onchange=e=>{S.sesliCevap=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
   el.querySelector("#tm").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tema=b.dataset.t;applyTheme();save();el.querySelectorAll(".th").forEach(t=>t.classList.toggle("on",t===b))};
   const fz=d=>{S.afs=Math.max(20,Math.min(50,S.afs+d));save();el.querySelector("#fs").textContent=S.afs;el.querySelector("#fx").style.fontSize=S.afs+"px"};
   el.querySelector("#fm").onclick=()=>fz(-2);el.querySelector("#fp").onclick=()=>fz(2);

@@ -28,6 +28,7 @@ const dayIdx=()=>Math.floor((Date.now()+3*3600e3)/864e5);
 const slug=s=>String(s).toLocaleLowerCase("tr").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ı/g,"i").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 function toast(m,ms=2600){document.querySelectorAll(".toast").forEach(x=>x.remove());const d=document.createElement("div");d.className="toast";d.setAttribute("role","status");d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),ms)}
 const IC={
+ bell:'<path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 20a2 2 0 004 0"/>',
  home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
  quran:'<path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 6v14"/>',
  hadis:'<path d="M4 4h12a4 4 0 014 4v12H8a4 4 0 01-4-4z"/><path d="M8 9h8M8 13h6"/>',
@@ -65,7 +66,7 @@ function confirmSheet(title,body,okText,fn){sheet(`<h3>${esc(title)}</h3><p clas
 
 /* ============ KAYIT ============ */
 const LK="nurokuma.v1";
-const DEF={acilis:true,gruplar:[],aktifGrup:null,adim:"",t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
+const DEF={acilis:true,sesliKomut:true,sesliCevap:true,gruplar:[],aktifGrup:null,adim:"",t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
 let S=structuredClone(DEF);
 try{const l=JSON.parse(localStorage.getItem(LK)||"null");if(l)S=Object.assign(structuredClone(DEF),l)}catch(e){}
 const IDB={db:null,open(){return this.db?Promise.resolve(this.db):new Promise((res,rej)=>{const r=indexedDB.open("nurpdf",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>{this.db=r.result;res(r.result)};r.onerror=()=>rej(r.error)})},
@@ -376,7 +377,7 @@ function sahneKandil(x,W,H,P){const g=x.createLinearGradient(0,0,0,H);g.addColor
   const R=tohum(5);x.save();for(let i=0;i<46;i++){const bx=R()*W,by=R()*H,br=8+R()*46;const b=x.createRadialGradient(bx,by,0,bx,by,br);b.addColorStop(0,"rgba(255,220,150,"+(.08+R()*.18)+")");b.addColorStop(1,"rgba(255,220,150,0)");x.fillStyle=b;x.fillRect(bx-br,by-br,br*2,br*2)}x.restore();
   x.save();const S2=150;for(let yy=H*.55;yy<H+S2;yy+=S2)for(let xx=((yy/S2|0)&1)*S2/2-S2;xx<W+S2;xx+=S2){x.globalAlpha=.07*Math.min(1,(yy-H*.55)/(H*.3));star8(x,xx,yy,44,null,P.gold,2.4)}x.restore();
   kandilCiz(x,W*.2,520,.78,P);kandilCiz(x,W*.8,470,.82,P);kandilCiz(x,W*.5,700,1.05,P)}
-async function drawWallpaper(cv,c,tema,stil){
+async function drawWallpaper(cv,c,tema,stil,vk){
   const W=1170,H=2532;cv.width=W;cv.height=H;const x=cv.getContext("2d"),P=wpPalette(tema);await wpFonts();
   if(c.a)c={...c,a:c.a.replace(/\u06EA/g,"\u0650")};
   const sahne=stil==="cami"||stil==="kandil";
@@ -412,7 +413,13 @@ async function drawWallpaper(cv,c,tema,stil){
   else y+=0;
   x.fillStyle=P.soft;x.font=`italic ${mS}px Literata`;y+=mS*.2;for(const l of f.ml){x.fillText(l,cx,y);y+=mS*1.5}
   x.fillStyle=P.gold;x.font="600 32px Manrope";x.fillText(c.k||"",cx,y+30);x.shadowColor="transparent";x.shadowBlur=0;x.shadowOffsetY=0;
+  if(vk)vakitSeridi(x,W,stil==="cami"?740:800,vk,P);
 }
+function vakitSeridi(x,W,y,vk,P){const pad=64,w=W-pad*2,h=176;x.save();
+  x.fillStyle=P.light?"rgba(255,255,255,.6)":"rgba(0,0,0,.32)";rr(x,pad,y,w,h,36);x.fill();x.strokeStyle=P.gold;x.globalAlpha=.55;x.lineWidth=2;rr(x,pad+8,y+8,w-16,h-16,30);x.stroke();x.globalAlpha=1;
+  x.textAlign="center";x.direction="ltr";x.fillStyle=P.gold;x.font="600 27px Manrope";x.fillText(vk.baslik,W/2,y+48);
+  const cw=w/6;vk.saat.forEach((t,i)=>{const cx=pad+cw*i+cw/2;x.fillStyle=P.soft;x.font="600 25px Manrope";x.fillText(VAKIT_AD[i][1],cx,y+98);x.fillStyle=P.ink;x.font="700 39px Manrope";x.fillText(t,cx,y+146)});x.restore()}
+async function wpVakit(){if(!S.il)return null;try{const g=new Date(),r=await vakitGun(g);if(!r)return null;return{baslik:`${S.il.ad} · ${g.toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}`,saat:r.slice(1,7)}}catch(e){return null}}
 function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
 const toBlob=(cv,type,q)=>new Promise(r=>cv.toBlob(r,type,q));
 async function saveWp(cv,name){const b=await toBlob(cv,"image/jpeg",.93);if(!b){toast("Resim hazırlanamadı");return false}return indir(b,name)}
@@ -447,6 +454,7 @@ function vDuvar(el){
   el.innerHTML=`<div class="seg" id="ks"><button data-k="ayet" class="${wp.kaynak==="ayet"?"on":""}">Günün ayeti</button><button data-k="hadis" class="${wp.kaynak==="hadis"?"on":""}">Günün hadisi</button><button data-k="kendi" class="${wp.kaynak==="kendi"?"on":""}">Kendi sözüm</button></div>
   <div id="kendi" class="${wp.kaynak==="kendi"?"":"hide"}" style="margin-bottom:10px"><textarea class="in" id="ks1" rows="3" placeholder="Söz veya dua">${esc(wp.kaynak==="kendi"?wp.src.m:"")}</textarea><input class="in" id="ks2" placeholder="Kaynak (isteğe bağlı)" style="margin-top:6px" value="${esc(wp.kaynak==="kendi"?wp.src.k:"")}"></div>
   <div class="wpwrap"><canvas id="cv" aria-label="Kilit ekranı önizleme"></canvas></div>
+  <label class="card row between" style="margin:14px 0 0;cursor:pointer"><span>${ic("clock",18)} Bugünün namaz vakitlerini ekle</span><input type="checkbox" id="wv" ${wp.vakit?"checked":""}></label>
   <button class="btn full acc" id="paylas" style="margin-top:14px">${ic("phone",18)} Duvar kâğıdı yap</button>
   <button class="btn full" id="add" style="margin-top:8px">${ic("dl",18)} Galeriye kaydet</button>
   <button class="btn full" id="zip" style="margin-top:8px">${ic("dl",18)} Her gün değişsin: tümünü indir (ZIP)</button>
@@ -456,7 +464,8 @@ function vDuvar(el){
   <div class="themes" id="tm">${WP_TEMALAR.map(([k,n])=>{const P=wpPalette(k);return `<button class="th ${k===wp.tema?"on":""}" data-t="${k}"><i style="background:linear-gradient(170deg,${P.a},${P.b} 70%,${P.c})"></i>${n}</button>`}).join("")}</div>
   ${S.fav.length?`<button class="btn full ghost" id="fv" style="margin-top:12px">Kaydettiklerimden seç</button>`:""}
   <button class="btn full line" id="how" style="margin-top:8px">Otomatik değişim nasıl kurulur?</button>`;
-  const cv=el.querySelector("#cv"),redraw=()=>drawWallpaper(cv,wp.src,wp.tema,wp.stil);redraw();
+  const cv=el.querySelector("#cv"),redraw=async()=>drawWallpaper(cv,wp.src,wp.tema,wp.stil,wp.vakit?await wpVakit():null);redraw();
+  el.querySelector("#wv").onchange=e=>{wp.vakit=e.target.checked;if(wp.vakit&&!S.il){ilSec();toast("Vakitler için önce şehrinizi seçin")}redraw()};
   el.querySelector("#ks").onclick=e=>{const b=e.target.closest("[data-k]");if(!b)return;wp.kaynak=b.dataset.k;wp.src=wp.kaynak==="kendi"?{a:"",m:"Rabbim! İlmimi artır.",k:"Tâhâ 20:114"}:pick(wp.kaynak);vDuvar(el)};
   const upd=()=>{wp.src={a:"",m:el.querySelector("#ks1").value.trim()||" ",k:el.querySelector("#ks2").value.trim()};clearTimeout(upd.t);upd.t=setTimeout(redraw,250)};
   el.querySelector("#ks1").oninput=upd;el.querySelector("#ks2").oninput=upd;
