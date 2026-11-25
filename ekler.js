@@ -350,7 +350,7 @@ function vbKart(){const ac=S.vakitBildirim&&typeof Notification!=="undefined"&&N
    <button class="btn sm ${ac?"ghost":"acc"}" id="vbd" style="white-space:nowrap;flex:none">${ac?"Kapat":"Aç"}</button></div></div>`}
 async function vbAcKapa(){
   if(typeof Notification==="undefined"||!("serviceWorker" in navigator)){toast("Bu telefon bildirim göstermeyi desteklemiyor");return}
-  if(S.vakitBildirim&&Notification.permission==="granted"){S.vakitBildirim=false;save();try{const r=await navigator.serviceWorker.ready;(await r.getNotifications({tag:"bct-vakit"})).forEach(n=>n.close())}catch(e){}render();return}
+  if(S.vakitBildirim&&Notification.permission==="granted"){S.vakitBildirim=false;save();try{const r=await navigator.serviceWorker.ready;(await r.getNotifications({tag:"bct-vakit"})).forEach(n=>n.close())}catch(e){}await vakitBildirimGuncelle();render();return}
   if(!S.il){ilSec();return}
   let izin=Notification.permission;if(izin!=="granted")try{izin=await Notification.requestPermission()}catch(e){}
   if(izin!=="granted"){sheet(`<h3>Bildirim izni gerekiyor</h3><p class="small">Telefonun <b>Ayarlar → Uygulamalar → Bireysel Cüz Takip → Bildirimler</b> bölümünden bildirimlere izin verin, sonra bu düğmeye tekrar basın.</p><button class="btn full" id="tm">Tamam</button>`,(sh,c)=>{sh.querySelector("#tm").onclick=c});return}

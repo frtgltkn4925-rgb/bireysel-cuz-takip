@@ -204,7 +204,7 @@ function dpOnayla(T,saat){const D=dpVeri(),n=Math.max(...T.map(g=>g.length));saa
 /* ----- Bildirim ----- */
 async function dersBildirimAcKapa(){const D=dpVeri();
   if(typeof Notification==="undefined"||!("serviceWorker" in navigator)){toast("Bu telefon bildirim göstermeyi desteklemiyor");return}
-  if(D.bildirim){D.bildirim=false;save();try{const r=await navigator.serviceWorker.ready;(await r.getNotifications({tag:"bct-ders"})).forEach(n=>n.close())}catch(e){}render();return}
+  if(D.bildirim){D.bildirim=false;save();try{const r=await navigator.serviceWorker.ready;(await r.getNotifications({tag:"bct-ders"})).forEach(n=>n.close())}catch(e){}await dersBildirimGuncelle(true);render();return}
   let izin=Notification.permission;if(izin!=="granted")try{izin=await Notification.requestPermission()}catch(e){}
   if(izin!=="granted"){toast("Bildirim izni verilmedi. Telefon ayarlarından izin verin.");return}
   D.bildirim=true;save();await dersBildirimGuncelle(true);toast("Bugünün dersleri bildirim panosuna eklendi");render()}
