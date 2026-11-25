@@ -4,7 +4,8 @@
    Bildirim panosunda o günün dersleri ve sınıfları görünür. Her şey telefonda kalır. */
 const DP_GUN=["Pazartesi","Salı","Çarşamba","Perşembe","Cuma"];
 const DP_SAAT=[["08:30","09:10"],["09:20","10:00"],["10:10","10:50"],["11:00","11:40"],["11:50","12:30"],["13:10","13:50"],["14:00","14:40"],["14:50","15:30"]];
-function dpVeri(){if(!S.ders||!S.ders.gun){S.ders={saat:DP_SAAT.map(x=>x.slice()),gun:DP_GUN.map(()=>DP_SAAT.map(()=>({d:"",s:""}))),bildirim:false}}return S.ders}
+function dpVeri(){if(!S.ders||!S.ders.gun){S.ders={saat:DP_SAAT.map(x=>x.slice()),gun:DP_GUN.map(()=>DP_SAAT.map(()=>({d:"",s:""}))),bildirim:false}}
+  const D=S.ders;while(D.saat.length<8){const s0=D.saat[D.saat.length-1]||["14:00","14:40"],[h,mm]=(s0[1]||"14:40").split(":").map(Number),b=h*60+mm+10,f=x=>String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0");D.saat.push([f(b),f(b+40)]);D.gun.forEach(g=>g.push({d:"",s:""}))}return D}
 const dpBugun=()=>{const g=new Date().getDay();return g>=1&&g<=5?g-1:-1};
 const dpDolu=c=>c&&(c.d||c.s);
 function dpGunDersleri(gi){const D=dpVeri();return gi<0?[]:D.gun[gi].map((c,i)=>({...c,i,bas:D.saat[i][0],bit:D.saat[i][1]})).filter(dpDolu)}
@@ -18,7 +19,8 @@ function vOgretmen(el){
   el.innerHTML=`<section class="dp-ust"><div><b>${gi<0?"Bugün hafta sonu":DP_GUN[gi]}</b><span>${gi<0?"Ders yok, iyi dinlenmeler.":bug.length?`${bug.length} ders · ${bug[0].bas} – ${bug[bug.length-1].bit}`:"Bugün için ders girilmemiş"}</span></div>
      ${sm&&sm.c?`<div class="dp-simdi"><small>${sm.tur==="simdi"?"Şu an":"Sıradaki"}</small><b>${esc(sm.c.d||"Ders")}</b><span>${esc(sm.c.s)} · ${sm.c.bas}</span></div>`:""}</section>
    <div class="row wrap" style="gap:8px;margin:12px 0">
-     <button class="btn acc" id="dpFoto">${ic("phone",16)} Programın fotoğrafını çek</button>
+     <button class="btn acc" id="dpFoto">${ic("phone",16)} Fotoğraf çek</button>
+     <button class="btn ghost" id="dpGaleri">Galeriden seç</button>
      <button class="btn ghost" id="dpBil">${ic("bell",16)} Bildirimde ${D.bildirim?"gösteriliyor":"göster"}</button></div>
    <div class="seg" id="dpGun">${DP_GUN.map((g,i)=>`<button data-g="${i}" class="${i===sec?"on":""}">${g.slice(0,3)}</button>`).join("")}</div>
    <div class="card dp-tablo">${D.saat.map((s,i)=>{const c=D.gun[sec][i];return `<div class="dp-sat ${sec===gi&&sm&&sm.c&&sm.c.i===i?"on":""}">
@@ -33,12 +35,12 @@ function vOgretmen(el){
   el.querySelectorAll("[data-k]").forEach(inp=>inp.onchange=()=>{D.gun[sec][+inp.dataset.i][inp.dataset.k]=inp.value.trim();kaydet()});
   el.querySelectorAll("[data-sa]").forEach(inp=>inp.onchange=()=>{D.saat[+inp.dataset.sa][+inp.dataset.u]=inp.value;kaydet()});
   el.querySelector("#dpBil").onclick=dersBildirimAcKapa;
-  el.querySelector("#dpFoto").onclick=dpFotoSec;
+  el.querySelector("#dpFoto").onclick=()=>dpFotoSec(true);el.querySelector("#dpGaleri").onclick=()=>dpFotoSec(false);
   IDB.del("ders-foto").catch(()=>{});}
 /* ----- Fotoğraftan okuma ----- */
 const DP_KISA={MAT:"Matematik",MATU:"Matematik Uygulamaları",MATUY:"Matematik Uygulamaları",REH:"Rehberlik",TÜR:"Türkçe",TUR:"Türkçe",TRK:"Türkçe",FEN:"Fen Bilimleri",FENU:"Fen Uygulamaları",SOS:"Sosyal Bilgiler",ING:"İngilizce",İNG:"İngilizce",DİN:"Din Kültürü",DIN:"Din Kültürü",DKAB:"Din Kültürü",BED:"Beden Eğitimi",BES:"Beden Eğitimi",MÜZ:"Müzik",MUZ:"Müzik",GÖR:"Görsel Sanatlar",GOR:"Görsel Sanatlar",TEK:"Teknoloji ve Tasarım",BİL:"Bilişim Teknolojileri",BIL:"Bilişim Teknolojileri",KUR:"Kur'an-ı Kerim",PEY:"Peygamberimizin Hayatı",TAR:"Tarih",İNK:"İnkılap Tarihi",INK:"İnkılap Tarihi",ARP:"Arapça",ALM:"Almanca",SEÇ:"Seçmeli",SEC:"Seçmeli"};
 function dpMesafe(a,b){let n=0;for(let i=0;i<Math.max(a.length,b.length);i++)if(a[i]!==b[i])n++;return n}
-function dpDersAdi(t){t=String(t||"").replace(/[|_—–~.,;:'"`*()]/g," ").replace(/\s+/g," ").trim();if(!t)return"";
+function dpDersAdi(t){{const tk=String(t||"").toLocaleUpperCase("tr").split(/[^A-ZÇĞİÖŞÜ0-9]+/).map(w=>w.replace(/\d+$/,"")).filter(w=>DP_KISA[w]).sort((a,b)=>b.length-a.length);if(tk.length)return DP_KISA[tk[0]]}t=String(t||"").replace(/[|_—–~.,;:'"`*()]/g," ").replace(/\s+/g," ").trim();if(!t)return"";
   t=t.split(" ").filter(w=>w.length>1||/\d/.test(w)).join(" ").replace(/^\d+\s+/,"");if(!t)return"";
   {const ilk=t.split(" ")[0].toLocaleUpperCase("tr").replace(/\d+$/,"");if(t.split(" ").length===1&&ilk.length>=3&&ilk.length<=5&&!DP_KISA[ilk]){const yakin=Object.keys(DP_KISA).find(k=>k.length===3&&dpMesafe(ilk.slice(0,3),k)<=1&&ilk.length<=4);if(yakin)return DP_KISA[yakin]}}
   const k=t.toLocaleUpperCase("tr").replace(/\d+$/,"").replace(/\s/g,"");if(DP_KISA[k])return DP_KISA[k];
@@ -48,6 +50,7 @@ function dpDersAdi(t){t=String(t||"").replace(/[|_—–~.,;:'"`*()]/g," ").repl
 function dpSinifAyikla(t){const a=String(t||"").toLocaleUpperCase("tr").replace(/[^0-9A-ZÇĞİÖŞÜ\/]/g,"");if(!a)return null;
   let m=a.match(/^(1[0-2]|[1-9])\/?I?([A-ZÇĞİÖŞÜ])$/);if(m)return{n:m[1],h:m[2]};
   m=a.match(/^([5-8])[0O]$/);if(m)return{n:m[1],h:"D"};
+  if(!DP_KISA[a]){m=a.match(/^[0-9GĞÖOBŞ&S][\/IİL1|]([A-H])$/);if(m)return{n:/\d/.test(a[0])?a[0]:null,h:m[1]}}
   if(/^[A-ZÇĞİÖŞÜ]{2}$/.test(a)&&!DP_KISA[a]&&/^[a-zçğıöşü]?[A-Z]?[A-Za-z][A-Z]$/.test(String(t).trim()))return{n:null,h:a[1]};
   m=a.match(/^([GEB&SZTŞ])\/?([A-ZÇĞİÖŞÜ])$/);if(m)return{n:null,h:m[2]};
   if(a.length===1&&/^[^0-9A-Za-zÇĞİÖŞÜçğıöşü]/.test(String(t).trim())&&/[A-ZÇĞİÖŞÜ]/.test(a))return{n:null,h:a};
@@ -61,7 +64,7 @@ function dpHucre(metin){const sat=String(metin||"").split(/\n|\|/).map(x=>x.trim
   if(!sn&&!bilinen&&ders.split(" ").every(w=>w.length<3))ders="";
   return{d:ders,s:"",_n:sn&&sn.n,_h:sn&&sn.h}}
 
-function dpFotoSec(){const i=document.createElement("input");i.type="file";i.accept="image/*";
+function dpFotoSec(kamera){const i=document.createElement("input");i.type="file";i.accept="image/*";if(kamera)i.setAttribute("capture","environment");
   i.onchange=()=>{const f=i.files&&i.files[0];if(f)dpKirp(f)};i.click()}
 /* Fotoğrafta tablonun dört köşesini seçtirir; eğik çekilmiş fotoğrafı düzleştirip okur */
 async function dpKirp(f){
@@ -136,7 +139,7 @@ function dpIzgara(cv){const W=cv.width,H=cv.height,px=cv.getContext("2d").getIma
   const sat=[];for(let y=0;y<H;y++){let c=0;for(let x=0;x<W;x++)c+=k[y*W+x];if(c>W*0.45)sat.push(y)}
   let hy=tamamla(grup(sat));if(hy.length<4)return null;const top=hy[0],bot=hy[hy.length-1];
   const sut=[];for(let x=0;x<W;x++){let c=0;for(let y=top;y<bot;y++)c+=k[y*W+x];if(c>(bot-top)*0.6)sut.push(x)}
-  const vx=grup(sut);if(vx.length<4)return null;return{hy,vx}}
+  const vx=tamamla(grup(sut));if(vx.length<4)return null;return{hy,vx}}
 async function dpIzgaraOku(w,cv,iz,ilerle){
   const {hy,vx}=iz,hucre=async(r,c)=>{const x0=vx[c]+5,y0=hy[r]+5,x1=vx[c+1]-5,y1=hy[r+1]-5;if(x1-x0<12||y1-y0<12)return"";
     const {data}=await w.recognize(cv,{rectangle:{left:x0,top:y0,width:x1-x0,height:y1-y0}});return(data.text||"").trim()};
@@ -153,6 +156,7 @@ async function dpIzgaraOku(w,cv,iz,ilerle){
   dpSiniflariDuzelt(T);
   // sütunun hiç dersi ve saati yoksa (Ma., Üc. gibi) sondan kırp
   let n=T[0].length;while(n>0&&!saatler[n-1]&&T.every(g=>!dpDolu(g[n-1])))n--;
+  n=Math.max(n,Math.min(8,T[0].length));
   return{T:T.map(g=>g.slice(0,n)),saat:saatler.slice(0,n)}}
 function dpKucult(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const k=Math.min(1,2200/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;
   const x=c.getContext("2d");x.filter="grayscale(1) contrast(1.35)";x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c)};im.onerror=rej;im.src=u})}
@@ -195,7 +199,7 @@ function dpOnayla(T,saat){const D=dpVeri(),n=Math.max(...T.map(g=>g.length));saa
    <div class="dp-onizle"><table><thead><tr><th></th>${DP_GUN.map(g=>`<th>${g.slice(0,3)}</th>`).join("")}</tr></thead><tbody>${Array.from({length:n},(_,i)=>`<tr><th>${i+1}${saat[i]?`<br><small>${saat[i][0]}</small>`:""}</th>${T.map(g=>{const c=g[i]||{};return `<td>${esc(c.d||"")}${c.s?`<br><b>${esc(c.s)}</b>`:""}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>
    <button class="btn full acc" id="dpOk" style="margin-top:12px">Tabloya aktar</button><button class="btn full ghost" id="dpNo" style="margin-top:8px">Vazgeç</button>`,(sh,close)=>{
     sh.querySelector("#dpNo").onclick=close;
-    sh.querySelector("#dpOk").onclick=()=>{while(D.saat.length<n){D.saat.push(["",""]);D.gun.forEach(g=>g.push({d:"",s:""}))}saat.forEach((z,i)=>{if(z)D.saat[i]=z});if(saatVar&&D.saat.length>n){D.saat=D.saat.slice(0,n);D.gun=D.gun.map(g=>g.slice(0,n))}D.gun.forEach(g=>g.forEach(c=>{c.d="";c.s=""}));T.forEach((g,gi)=>g.forEach((c,i)=>{if(dpDolu(c))D.gun[gi][i]={d:c.d,s:c.s}}));save();close();toast("Program aktarıldı, kontrol etmeyi unutmayın");dersBildirimGuncelle(true);render()}})}
+    sh.querySelector("#dpOk").onclick=()=>{while(D.saat.length<n){D.saat.push(["",""]);D.gun.forEach(g=>g.push({d:"",s:""}))}saat.forEach((z,i)=>{if(z)D.saat[i]=z});for(let i=1;i<D.saat.length;i++)if(!saat[i]&&saat[i-1]&&D.saat[i-1][1]){const [h,mm]=D.saat[i-1][1].split(":").map(Number),b=h*60+mm+10,e=b+40,f=x=>String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0");D.saat[i]=[f(b),f(e)];saat[i]=D.saat[i]}{const m=Math.max(8,n);if(D.saat.length>m){D.saat=D.saat.slice(0,m);D.gun=D.gun.map(g=>g.slice(0,m))}}D.gun.forEach(g=>g.forEach(c=>{c.d="";c.s=""}));T.forEach((g,gi)=>g.forEach((c,i)=>{if(dpDolu(c))D.gun[gi][i]={d:c.d,s:c.s}}));save();close();toast("Program aktarıldı, kontrol etmeyi unutmayın");dersBildirimGuncelle(true);render()}})}
 
 /* ----- Bildirim ----- */
 async function dersBildirimAcKapa(){const D=dpVeri();
