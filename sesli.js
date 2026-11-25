@@ -28,11 +28,50 @@ const SK_SAYFA=[[/(ana sayfa|anasayfa|bugün|başa dön|giriş)/,"home","Ana say
   [/zikir|tesbih|zikirmatik/,"zikir","Zikir"],[/hadis/,"hadisler","Hadis ansiklopedisi"],[/grup/,"grup","Grup okuma"],[/kitaplık|kitaplik|kitaplar/,"kitaplik","Kitaplık"],[/siyer/,"siyer","Siyer-i Nebî"],
   [/peygamber/,"peygamber","Peygamberler"],[/sahabe/,"sahabe","Sahabeler"],[/hava/,"hava","Hava durumu"],[/dini gün|kandil/,"gunler","Dini günler"],[/cevşen/,"cevsen","Cevşen"],
   [/ekran resmi|duvar kağıdı|duvar kâğıdı/,"duvar","Telefon ekranı"],[/ayarlar/,"ayarlar","Ayarlar"],[/hatim|plan/,"cuz","Hatim ve plan"],[/kuran|kur an|mushaf/,"kuran","Kur'an-ı Kerîm sure listesi"]];
-const SK_YARDIM="Şunları sorabilirsiniz: Bugün derslerim ne. Bugün hangi sınıflara giriyorum. Sıradaki dersim ne. Yarın derslerim. Altı F ile ne zaman dersim var. Namaza kaç dakika var. Akşam ezanı kaçta. Bugünkü vakitler. Hava nasıl. Yarın yağmur var mı. Saat kaç. Bugün ne günü. Sıradaki kandil ne zaman. Günün ayeti. Günün hadisi. Yasin suresini oku. Beşinci cüzü dinle. Kıble. Geri. Dur.";
+const SK_YARDIM="Şunları sorabilirsiniz. Okuma için: Hangi cüzdeyim. Kaldığım yer. Yasin suresini oku. Beşinci cüzü dinle. Sabır ile ilgili ayetler. Ders programı için: Bugün derslerim ne. Bugün hangi sınıflara giriyorum. Sıradaki dersim ne. Yarın derslerim. Altı F ile ne zaman dersim var. Vakitler için: Namaza kaç dakika var. Akşam ezanı kaçta. Bugünkü vakitler. Hava nasıl. Yarın yağmur var mı. Saat kaç. Bugün ne günü. Sıradaki kandil ne zaman. Günün ayeti. Günün hadisi. Gezinmek için: Bu sayfada ne var. Ana sayfa. Kıble. Geri. Dur.";
 const skSaat=hhmm=>{const [h,m]=String(hhmm).split(":").map(Number);return m?`${h} ${String(m).padStart(2,"0")}`:`${h}`};
 const skSure_=dk=>{const sa=Math.floor(dk/60),d=dk%60;return (sa?sa+" saat ":"")+(d||!sa?d+" dakika":"")};
 const SK_VAKIT=[[/imsak|sabah|sahur/,0],[/gunes|guneş|dogus/,1],[/ogle|cuma namaz/,2],[/ikindi/,3],[/aksam|iftar/,4],[/yatsi/,5]];
 
+
+/* ----- Hatim / cüz durumu ----- */
+function skCuzDurum(a){
+  if(!/(hangi cuz|cuzde(yim|yiz)|cuz deyim|cuz de yim|kacinci cuz|kaldigim yer|nerede kaldim|grup cuz|cuzum|benim cuz|hatim|okumam gereken|bugun ne okuyacagim|ne okuyacagim|plan(im|imda|ima))/.test(a))return false;
+  const p=[],g=typeof aktifGrup==="function"?aktifGrup():null,d=typeof planDurum==="function"?planDurum():null;let ac=null;
+  if(g&&g.ben){p.push(`Grup okumada${g.ad?" "+g.ad+" grubunda":""} bu hafta ${g.ben}. cüz sizde${(S.cuz[g.ben]||{}).d?", okundu olarak işaretli":""}.`);ac=ac||g.ben}
+  if(d&&!d.bitti){const k=sayfaCuzu(d.bas);p.push(`Okuma planınıza göre ${k}. cüzdesiniz. Bugün ${d.bas}. sayfadan ${d.son}. sayfaya kadar okumanız gerekiyor.`);ac=ac||k}
+  else if(d&&d.bitti)p.push("Okuma planınızdaki hatmi tamamladınız. Allah kabul etsin.");
+  if(S.son)p.push(`Kaldığınız yer olarak ${SURELER[S.son.s-1][0]} suresi ${S.son.a}. ayet işaretli.`);
+  const okunan=Object.keys(S.cuz||{}).filter(k=>S.cuz[k]&&S.cuz[k].d).length;
+  if(okunan){let sir=1;while(sir<=30&&(S.cuz[sir]||{}).d)sir++;p.push(`Hatimde 30 cüzden ${okunan} tanesi okundu.${sir<=30?` Sıradaki okunmamış cüz ${sir}. cüz.`:" Hatim tamamlandı."}`);ac=ac||(sir<=30?sir:null)}
+  if(!p.length){skSoyle("Henüz bir okuma planınız, grubunuz ya da işaretli bir yeriniz yok. Bir cüz okumak için, örneğin, beşinci cüzü oku diyebilirsiniz.");return true}
+  if(/(oku|dinle|ac|baslat)/.test(a)&&ac){p.push(`${ac}. cüz okunuyor.`);skSoyle(p.join(" "));okuyucu(ac,{dinle:true});return true}
+  if(ac)p.push(`Okumak için ${ac}. cüzü oku diyebilirsiniz.`);
+  skSoyle(p.join(" "));return true}
+/* ----- Sayfayı anlatma ----- */
+const SK_ALT="Ekranın en altında altı sekme var, soldan sağa: Bugün, Kur'an, Grup, Vakitler, Zikir ve Kitaplık. Mikrofon düğmesi sağ alt köşede, sekmelerin hemen üstünde.";
+const SK_SAYFA_ANLAT={
+  home:"Ana sayfadasınız. En üstte selamlama, tarih ve sıradaki namaz vaktine kalan süre, altında günün altı vakti var. Sonra sekiz kısayol geliyor: Kur'an, Kıble, Grup, Zikirmatik, Hatim planı, İmsakiye, Kitaplık ve Ekran resmi. Aşağıda öğretmen ders programı, grup okuma, okuma planı, günün ayeti, yaklaşan dini gün ve günün hadisi var.",
+  kuran:"Kur'an sayfasındasınız. Üstte üç düğme var: Sureler, Cüzler ve Konu ara. Altında sure arama kutusu ve 114 surenin listesi var. Sesli olarak, örneğin, Yasin suresini oku diyebilirsiniz.",
+  cuz:"Hatim ve plan sayfasındasınız. Otuz cüzün listesi, hatim durumu ve okuma planı burada. Bir cüz okumak için, örneğin, on beşinci cüzü oku deyin.",
+  konu:"Kur'an'da konu arama sayfasındasınız. Bir konu söylediğinizde ilgili ayetler alt alta sıralanır. Örneğin, sabır ile ilgili ayetler deyin.",
+  vakit:"Namaz vakitleri sayfasındasınız. En üstte sıradaki vakte kalan süre ve günün vakitleri, altında ezan aboneliği ve aylık imsakiye tablosu var. Namaza kaç dakika var diye sorabilirsiniz.",
+  zikir:"Zikir sayfasındasınız. Zikirmatik, namaz tesbihatı ve Cevşen burada.",
+  kitaplik:"Kitaplık sayfasındasınız. Siyer, peygamberler, sahabeler, hadis ansiklopedisi ve sahih hadisler var. Altında telefonunuza eklediğiniz PDF kitaplar listelenir.",
+  grup:"Grup okuma sayfasındasınız. Grubunuzun otuz cüzü, bu haftaki cüzünüz ve okudum düğmesi burada. Hangi cüzdeyim diye sorabilirsiniz.",
+  ogretmen:"Öğretmen ders programı sayfasındasınız. Üstte bugünün özeti, altında fotoğraf çek ve galeriden seç düğmeleri, gün seçimi ve sekiz ders saatlik tablo var. Bugün derslerim ne diye sorabilirsiniz.",
+  hadisler:"Hadis ansiklopedisi sayfasındasınız. Hadisler konulara göre ayrılmış; bir konu seçince o konudaki hadisler listelenir.",
+  kible:"Kıble pusulası sayfasındasınız. Ortada büyük bir pusula ve altında başlat düğmesi var. Telefonu yere paralel tutup yavaşça dönün; kıbleye döndüğünüzde telefon titrer.",
+  duvar:"Telefon ekranı sayfasındasınız. Üstte duvar kâğıdı önizlemesi, altında namaz vakitlerini ekle kutusu, duvar kâğıdı yap ve galeriye kaydet düğmeleri, stil ve tema seçimleri var.",
+  ayarlar:"Ayarlar sayfasındasınız. Şehir, okuma planı, tema, yazı boyutu, internetsiz kullanım, açılış ve sesli komut ayarları burada.",
+  hava:"Hava durumu sayfasındasınız. Hava nasıl diye sorarsanız sesli olarak söylerim.",
+  gunler:"Dini günler sayfasındasınız. Yaklaşan kandiller ve bayramlar tarihleriyle listeleniyor.",
+  siyer:"Siyer sayfasındasınız. Peygamber Efendimizin hayatı bölüm bölüm anlatılıyor.",
+  kayit:"Kaydettikleriniz sayfasındasınız. Kaydettiğiniz ayet ve hadisler burada."};
+function skSayfaAnlat(){const v=document.querySelector(".oku")?"oku":cur.v;
+  if(v==="oku")return "Okuma ekranındasınız. Üstte geri düğmesi, sure adı ve sayfa bilgisi var. Altta oynat düğmesi, hafız seçimi, otomatik kaydırma ve cüzü okudum düğmesi bulunuyor. Dur, devam ya da geri diyebilirsiniz.";
+  if(v==="sure")return `${(document.querySelector("#ttl")||{}).textContent||"Sure"} sayfasındasınız. Ayetler Arapça ve mealiyle alt alta sıralanmış. Dinlemek için bu sureyi oku deyin. ${SK_ALT}`;
+  return `${SK_SAYFA_ANLAT[v]||((document.querySelector("#ttl")||{}).textContent||"Bu")+" sayfasındasınız."} ${SK_ALT}`}
 /* ----- Ders programı soruları ----- */
 const SK_GUNLER=[["pazartesi",0],["sali",1],["carsamba",2],["persembe",3],["cuma",4]];
 function skDersGun(a){if(/yarin/.test(a)){const g=new Date();g.setDate(g.getDate()+1);const d=g.getDay();return{gi:d>=1&&d<=5?d-1:-1,ad:"Yarın",hs:d===0||d===6}}
@@ -72,6 +111,9 @@ function skDers(a){
   if(/(hangi sinif|sinif)/.test(a)&&siniflar.length){skSoyle(`${gunAd} ${siniflar.join(", ")} sınıflarına giriyorsunuz. Toplam ${l.length} ders. ${skDersListe(gi).join(". ")}.`);return true}
   skSoyle(`${gunAd} ${l.length} dersiniz var, saat ${skSaat(l[0].bas)} ile ${skSaat(l[l.length-1].bit)} arası. ${skDersListe(gi).join(". ")}.`);return true}
 async function skBilgi(a){
+  if(/(bu sayfa|neredeyim|hangi sayfa|ekrani anlat|ekranda ne|sayfayi anlat|sayfada ne|burada ne|neler var|ne yapabilirim)/.test(a)){skSoyle(skSayfaAnlat());return true}
+  if(/(mikrofon nerede|dugme nerede|nasil kullan)/.test(a)){skSoyle(SK_REHBER.replace("Bireysel Cüz Takip açıldı. ",""));return true}
+  if(skCuzDurum(a))return true;
   if(skDers(a))return true;
   const vakitSoru=/(namaz|vakit|ezan|imsak|sabah|ogle|ikindi|aksam|yatsi|iftar|sahur)/.test(a),zamanSoru=/(kac|ne zaman|kaldi|saat|var mi|ne kadar|siradaki|sonraki|bugunku|bugun)/.test(a);
   if(vakitSoru&&(zamanSoru||/vakitler/.test(a))){
@@ -131,13 +173,24 @@ function skBasla(){const b=document.getElementById("skMik");
   try{speechSynthesis.cancel()}catch(e){}
   try{const au=window.OKU_AU||(window.OKU_AU=new Audio());if(!au.src||au.paused){au.src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";au.play().then(()=>au.pause(),()=>{})}}catch(e){}
   skTanima=new SK_SR();skTanima.lang="tr-TR";skTanima.interimResults=false;skTanima.maxAlternatives=5;
-  skTanima.onstart=()=>{skDinliyor=true;b&&b.classList.add("on");b&&b.setAttribute("aria-label","Dinliyorum. Durdurmak için dokunun")};
+  skTanima.onstart=()=>{skDinliyor=true;try{navigator.vibrate&&navigator.vibrate(40)}catch(e){}skBalon("","Dinliyorum…");b&&b.classList.add("on");b&&b.setAttribute("aria-label","Dinliyorum. Durdurmak için dokunun")};
   skTanima.onend=()=>{skDinliyor=false;b&&b.classList.remove("on");b&&b.setAttribute("aria-label","Sesli komut. Dokunup konuşun")};
   skTanima.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed")skSoyle("Mikrofon izni verilmedi. Telefon ayarlarından izin verin.");else if(e.error==="no-speech")skSoyle("Ses duyamadım, tekrar deneyin.")};
-  skTanima.onresult=e=>{const r=e.results[0];let en=r[0].transcript;for(let i=0;i<r.length;i++){const x=r[i].transcript,ax=skAn(x);if(/c[uü][zs]|vakit|kible|zikir|hadis|ana sayfa|geri|dur|devam|yardim/.test(ax)||skSureBul(x)){en=x;break}}skBalon(en,"");skKomut(en)};
+  skTanima.onresult=e=>{const r=e.results[0];let en=r[0].transcript;for(let i=0;i<r.length;i++){const x=r[i].transcript,ax=skAn(x);if(/c[uü][zs]|vakit|kible|zikir|hadis|ana sayfa|geri|dur|devam|yardim/.test(ax)||skSureBul(x)){en=x;break}}try{navigator.vibrate&&navigator.vibrate([20,40,20])}catch(e){}skBalon(en,"");skKomut(en)};
   try{skTanima.start()}catch(e){}}
 function skDugme(){if(document.getElementById("skMik"))return;
   document.body.insertAdjacentHTML("beforeend",`<button id="skMik" class="sk-mik" aria-label="Sesli komut. Dokunup konuşun"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button><div id="skCanli" class="gizli-okunur" aria-live="polite"></div>`);
   document.getElementById("skMik").onclick=skBasla;skGoster()}
 function skGoster(){const b=document.getElementById("skMik");if(b)b.classList.toggle("hide",S.sesliKomut===false)}
 skDugme();
+
+/* ----- Görme engelliler için açılış rehberi ----- */
+const SK_REHBER="Bireysel Cüz Takip açıldı. Sesli komut için mikrofon düğmesi ekranın sağ alt köşesinde, alt menünün hemen üstünde. Ona bir kez dokunun, titreşimi hissedince konuşun. Neler söyleyebileceğinizi öğrenmek için yardım, bulunduğunuz sayfayı dinlemek için bu sayfada ne var deyin.";
+function skRehber(){if(S.sesliRehber===false||S.sesliKomut===false)return;
+  const c=document.getElementById("skCanli");
+  const soyle=()=>{if(document.querySelector(".acilis"))return false;if(c)c.textContent=SK_REHBER;try{const ss=window.speechSynthesis;if(!ss)return true;ss.cancel();const u=new SpeechSynthesisUtterance(SK_REHBER);u.lang="tr-TR";u.rate=.95;const v=ss.getVoices().find(x=>/^tr/i.test(x.lang));if(v)u.voice=v;let bas=false;u.onstart=()=>{bas=true};ss.speak(u);setTimeout(()=>{if(!bas)ilkDokunus()},1200)}catch(e){}return true};
+  const ilkDokunus=()=>{const f=()=>{document.removeEventListener("pointerdown",f,true);setTimeout(()=>{if(!skDinliyor)soyle()},400)};document.addEventListener("pointerdown",f,true)};
+  let n=0;const bekle=setInterval(()=>{if(soyle()||++n>40)clearInterval(bekle)},500)}
+setTimeout(skRehber,1200);
+// TalkBack kullananlar için sayfa değişince sayfa adını bildir
+window.addEventListener("hashchange",()=>{const c=document.getElementById("skCanli");if(c&&S.sesliRehber!==false)setTimeout(()=>{c.textContent=((document.querySelector("#ttl")||{}).textContent||"")+" sayfası"},300)});
