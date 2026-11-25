@@ -23,49 +23,56 @@ async function ozetVeri(){
 const ozKisa=t=>{t=String(t||"Ders");return t.length>14?t.slice(0,13).trim()+".":t};
 const ozDersK=c=>`${c.s?c.s+" ":""}${ozKisa(c.d)}`;
 // Android kapalı bildirimde başlık + tek satır gösterir; her şey bu iki satıra sığdırılır
-// tek satır: vakit │ şu anki ders │ sıradaki ders
-function ozMetin(o){const v=o.vakit,d=o.ders,p=[];
-  if(v){const sa=Math.floor(v.dk/60),dk=v.dk%60;p.push(`🕌 ${v.ad} ${v.saat} · ${sa?`${sa}:${ikiH(dk)}`:`${dk} dk`}`)}
-  if(d){if(d.simdi)p.push(d.simdi.bos?"⚪ Şu an boş":`🟢 Şu an ${d.simdi.s||ozKisa(d.simdi.d)}`);
-    if(d.sonraki)p.push(`🟠 Sıradaki ${d.sonraki.s||ozKisa(d.sonraki.d)} ${d.sonraki.bas}`);
-    if(!d.simdi&&!d.sonraki)p.push(`⚪ ${d.durum.replace("Bugünkü dersler bitti","Dersler bitti").replace("Bugün ders yok","Ders yok")}`)}
-  return{baslik:p.join(" │ "),govde:""}}
+// Samsung bildirimi kapalıyken tek satırlık hap gösterir: başlık çok kısa tutulur, ayrıntı açılınca görünür
+function ozMetin(o){const v=o.vakit,d=o.ders;let baslik="",sat=[];
+  let dersSat="";
+  if(d){if(d.simdi&&d.sonraki)dersSat=`${d.simdi.bos?"⚪ Şu an boş":"🟢 Şu an "+ozDersK(d.simdi)}  ›  🟠 Sıradaki ${ozDersK(d.sonraki)} ${d.sonraki.bas}`;
+    else if(d.simdi)dersSat=d.simdi.bos?`⚪ Şu an boş saat · bitiş ${d.simdi.bit}`:`🟢 Şu an ${ozDersK(d.simdi)} · bitiş ${d.simdi.bit}`;
+    else if(d.sonraki)dersSat=`🟠 Sıradaki ${ozDersK(d.sonraki)} · ${d.sonraki.bas}${d.sonraki.kalan<=120?` (${ozSure(d.sonraki.kalan)} sonra)`:""}`;
+    else dersSat=`⚪ ${d.durum}`}
+  if(v){baslik=`${v.ad} ${v.saat}`;sat.push(`${ozSure(v.dk)} kaldı · ${S.il.ad}`);if(dersSat)sat.push(dersSat)}
+  else{baslik=d.simdi&&!d.simdi.bos?`Şu an ${d.simdi.s||ozKisa(d.simdi.d)}`:d.sonraki?`Sıradaki ${d.sonraki.s||ozKisa(d.sonraki.d)} ${d.sonraki.bas}`:d.durum;sat.push(dersSat)}
+  return{baslik,govde:sat.join("\n")}}
 // sağdaki yuvarlak: vakte göre renkli, ortada kalan süre
-function ozIkon(o){try{const c=document.createElement("canvas"),Z=192;c.width=c.height=Z;const x=c.getContext("2d"),v=o.vakit,d=o.ders;
-  const dersRenk=!d?null:d.simdi?(d.simdi.bos?["#64748b","#334155"]:["#22c55e","#15803d"]):d.sonraki?["#f59e0b","#b45309"]:["#64748b","#334155"];
+function ozIkon(o){try{const c=document.createElement("canvas"),Z=192;c.width=c.height=Z;const x=c.getContext("2d"),v=o.vakit;let d=o.ders;
+  const dersRenk=!o.ders?null:o.ders.simdi?(o.ders.simdi.bos?["#64748b","#334155"]:["#22c55e","#15803d"]):o.ders.sonraki?["#f59e0b","#b45309"]:["#64748b","#334155"];
   const parca=(y,h,R)=>{const g=x.createLinearGradient(0,y,Z,y+h);g.addColorStop(0,R[0]);g.addColorStop(1,R[1]);x.fillStyle=g;x.fillRect(0,y,Z,h)};
   x.save();x.beginPath();x.arc(Z/2,Z/2,Z/2,0,7);x.clip();x.textAlign="center";
-  const ust=v&&d?Z*.56:Z;
+  const ust=Z;const dHap=d;d=v?null:d;
   if(v){const R=OZ_RENK[v.i];parca(0,ust,[R[1],R[0]]);const sa=Math.floor(v.dk/60),dk=v.dk%60,b=sa?`${sa}:${ikiH(dk)}`:`${dk}dk`;
-    x.fillStyle=R[2];x.font=`800 ${d?20:24}px Manrope,sans-serif`;x.fillText(v.ad.toLocaleUpperCase("tr"),Z/2,d?40:62);
+    x.fillStyle=R[2];x.font=`800 ${d?20:26}px Manrope,sans-serif`;x.fillText(v.ad.toLocaleUpperCase("tr"),Z/2,d?40:62);
     x.fillStyle="#fff";x.font=`800 ${d?(b.length>4?44:50):(b.length>4?58:66)}px Manrope,sans-serif`;x.fillText(b,Z/2,d?88:126)}
   if(d){parca(v?ust:0,Z-(v?ust:0),dersRenk);const y0=v?ust:0,h=Z-y0,ana=d.simdi&&!d.simdi.bos?(d.simdi.s||d.simdi.no+"."):d.sonraki?(d.sonraki.s||d.sonraki.bas):"—";
     if(v){x.fillStyle="rgba(255,255,255,.85)";x.fillRect(0,y0,Z,3)}
     x.fillStyle="#fff";x.font=`800 ${v?38:58}px Manrope,sans-serif`;x.fillText(ana,Z/2,y0+h/2+(v?6:4));
     x.font=`800 ${v?13:18}px Manrope,sans-serif`;x.fillStyle="rgba(255,255,255,.9)";x.fillText(d.simdi&&!d.simdi.bos?"ŞU AN":d.sonraki?"SIRADAKİ":"DERS",Z/2,y0+h/2+(v?30:38))}
   x.restore();return c.toDataURL("image/png")}catch(e){return "icon-192.png"}}
-// açılınca görünen kart (Android geniş görseli yaklaşık 2:1 gösterir)
-function ozResim(o){try{const W=720,H=360,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+// açılınca görünen kart: alçak, yatay şerit (solda vakit, sağda yan yana ders kutuları)
+function ozResim(o){try{const W=720,H=180,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
   x.fillStyle="#0f172a";x.fillRect(0,0,W,H);
-  const ikiBolme=o.vakit&&o.ders,VW=ikiBolme?300:o.vakit?W:0;
+  const VW=o.vakit?(o.ders?132:W):0;
   if(o.vakit){const R=OZ_RENK[o.vakit.i],g=x.createLinearGradient(0,0,VW,H);g.addColorStop(0,R[1]);g.addColorStop(1,R[0]);x.fillStyle=g;x.fillRect(0,0,VW,H);
-    x.save();x.globalAlpha=.12;for(let yy=-20;yy<H+40;yy+=60)for(let xx=-20;xx<VW+40;xx+=60)star8(x,xx+((yy/60|0)%2)*30,yy,16,null,"#fff",1.4);x.restore();
-    x.textAlign="left";x.fillStyle=R[2];x.font="700 22px Manrope,sans-serif";x.fillText(`${S.il.ad} · Sıradaki vakit`,28,46);
-    x.fillStyle="#fff";x.font="800 54px Manrope,sans-serif";x.fillText(o.vakit.ad,28,116);
-    const s=Math.floor(o.vakit.dk/60),d=o.vakit.dk%60;x.font="800 70px Manrope,sans-serif";x.fillText(s?`${s}:${ikiH(d)}`:`${d} dk`,28,212);
-    x.fillStyle=R[2];x.font="600 22px Manrope,sans-serif";x.fillText(s?"saat : dakika kaldı":"kaldı",30,246);
-    x.fillStyle="rgba(255,255,255,.22)";rr(x,28,274,150,54,27);x.fill();x.fillStyle="#fff";x.font="800 28px Manrope,sans-serif";x.textAlign="center";x.fillText(o.vakit.saat,103,311)}
-  if(o.ders){const X=VW,Wd=W-VW,d=o.ders;x.textAlign="left";
-    x.fillStyle="#93c5fd";x.font="700 22px Manrope,sans-serif";x.fillText(`${DP_GUN[Math.max(0,dpBugun())]||""} · Dersler`,X+26,46);
-    const kutu=(y,renk,etiket,ana,alt,sag)=>{x.fillStyle=renk;rr(x,X+20,y,Wd-40,118,20);x.fill();
-      x.fillStyle="rgba(255,255,255,.85)";x.font="800 16px Manrope,sans-serif";x.fillText(etiket,X+40,y+30);
-      x.fillStyle="#fff";x.font="800 30px Manrope,sans-serif";let a=ana;while(x.measureText(a).width>Wd-160&&a.length>4)a=a.slice(0,-2)+"…";x.fillText(a,X+40,y+72);
-      x.fillStyle="rgba(255,255,255,.85)";x.font="600 20px Manrope,sans-serif";x.fillText(alt,X+40,y+102);
-      if(sag){x.textAlign="right";x.fillStyle="#fff";x.font="800 38px Manrope,sans-serif";x.fillText(sag,X+Wd-40,y+76);x.textAlign="left"}};
-    let y=66;
-    if(d.simdi){kutu(y,d.simdi.bos?"#475569":"#16a34a","ŞU AN",d.simdi.bos?"Boş saat":(d.simdi.d||"Ders"),`${d.simdi.no}. ders · bitiş ${d.simdi.bit}`,d.simdi.bos?"":d.simdi.s);y+=132}
-    if(d.sonraki){kutu(y,"#d97706","SIRADAKİ",d.sonraki.d||"Ders",`${d.sonraki.no}. ders · ${d.sonraki.bas}${d.sonraki.kalan<=120?` · ${ozSure(d.sonraki.kalan)} sonra`:""}`,d.sonraki.s);y+=132}
-    if(d.durum){x.fillStyle="#334155";rr(x,X+20,y,Wd-40,90,20);x.fill();x.fillStyle="#e2e8f0";x.font="700 26px Manrope,sans-serif";x.fillText(d.durum,X+40,y+55)}}
+    x.save();x.beginPath();x.rect(0,0,VW,H);x.clip();x.globalAlpha=.10;for(let yy=-20;yy<H+40;yy+=48)for(let xx=-20;xx<VW+40;xx+=48)star8(x,xx+((yy/48|0)%2)*24,yy,12,null,"#fff",1.1);x.restore();
+    const s=Math.floor(o.vakit.dk/60),d=o.vakit.dk%60,kalan=s?`${s}:${ikiH(d)}`:`${d} dk`;
+    if(o.ders){const cx=VW/2;x.textAlign="center";
+      x.fillStyle=R[2];x.font="800 15px Manrope,sans-serif";x.fillText(o.vakit.ad.toLocaleUpperCase("tr"),cx,40);
+      x.fillStyle="#fff";x.font=`800 ${kalan.length>4?34:38}px Manrope,sans-serif`;x.fillText(kalan,cx,88);
+      x.fillStyle=R[2];x.font="600 13px Manrope,sans-serif";x.fillText(s?"sa : dk kaldı":"kaldı",cx,108);
+      x.fillStyle="rgba(255,255,255,.18)";rr(x,cx-40,124,80,32,16);x.fill();x.fillStyle="#fff";x.font="800 17px Manrope,sans-serif";x.fillText(o.vakit.saat,cx,146)}
+    else{x.textAlign="left";x.fillStyle=R[2];x.font="700 16px Manrope,sans-serif";x.fillText(`${S.il.ad.toLocaleUpperCase("tr")} · SIRADAKİ VAKİT`,36,46);
+      x.fillStyle="#fff";x.font="800 40px Manrope,sans-serif";x.fillText(o.vakit.ad,36,100);x.fillStyle=R[2];x.font="700 22px Manrope,sans-serif";x.fillText(o.vakit.saat,36,140);
+      x.textAlign="right";x.fillStyle="#fff";x.font="800 64px Manrope,sans-serif";x.fillText(kalan,W-36,112);x.fillStyle=R[2];x.font="600 16px Manrope,sans-serif";x.fillText(s?"saat : dakika kaldı":"kaldı",W-36,142)}}
+  if(o.ders){const d=o.ders,X0=VW+16,Wd=W-VW-32,kutular=[];
+    if(d.simdi)kutular.push([d.simdi.bos?"#94a3b8":"#22c55e","ŞU AN",d.simdi.bos?"Boş saat":(d.simdi.d||"Ders"),`${d.simdi.no}. ders · bitiş ${d.simdi.bit}`,d.simdi.bos?"":d.simdi.s]);
+    if(d.sonraki)kutular.push(["#f59e0b","SIRADAKİ",d.sonraki.d||"Ders",`${d.sonraki.bas}${d.sonraki.kalan<=120?` · ${ozSure(d.sonraki.kalan)} sonra`:""}`,d.sonraki.s]);
+    if(d.durum)kutular.push(["#94a3b8",(DP_GUN[Math.max(0,dpBugun())]||"").toLocaleUpperCase("tr"),d.durum,"",""]);
+    const n=kutular.length,gap=12,kw=(Wd-gap*(n-1))/n,ky=22,kh=H-44;
+    kutular.forEach(([renk,etiket,ana,alt,sinif],k)=>{const X=X0+k*(kw+gap);x.textAlign="left";
+      x.fillStyle="rgba(255,255,255,.06)";rr(x,X,ky,kw,kh,16);x.fill();x.fillStyle=renk;rr(x,X,ky,5,kh,3);x.fill();
+      x.fillStyle=renk;x.font="800 13px Manrope,sans-serif";x.fillText(etiket,X+20,ky+30);
+      if(sinif){x.font="800 18px Manrope,sans-serif";const tw=Math.max(54,x.measureText(sinif).width+22),bx=X+kw-14-tw;x.fillStyle=renk;rr(x,bx,ky+12,tw,30,15);x.fill();x.fillStyle="#0f172a";x.textAlign="center";x.fillText(sinif,bx+tw/2,ky+33);x.textAlign="left"}
+      x.fillStyle="#f8fafc";x.font=`700 ${n>2?20:23}px Manrope,sans-serif`;let a=ana;while(x.measureText(a).width>kw-36&&a.length>4)a=a.slice(0,-2)+"…";x.fillText(a,X+20,ky+76);
+      if(alt){x.fillStyle="#94a3b8";x.font="600 15px Manrope,sans-serif";let b=alt;while(x.measureText(b).width>kw-36&&b.length>4)b=b.slice(0,-2)+"…";x.fillText(b,X+20,ky+108)}})}
   return c.toDataURL("image/png")}catch(e){return undefined}}
 async function ozetGuncelle(zorla){
   if(typeof Notification==="undefined"||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
@@ -74,7 +81,7 @@ async function ozetGuncelle(zorla){
     const o=await ozetVeri(),eski=(await r.getNotifications({tag:OZ_TAG}))[0];
     if(!o){if(eski)eski.close();return}
     const t=ozMetin(o);if(!zorla&&eski&&eski.title===t.baslik&&eski.body===t.govde)return;
-    await r.showNotification(t.baslik,{body:t.govde,tag:OZ_TAG,renotify:false,silent:true,requireInteraction:true,badge:"rozet.png",data:{url:o.ders&&dpBugun()>=0?"./#ogretmen":"./#vakit"}})}
+    await r.showNotification(t.baslik,{body:t.govde,icon:ozIkon(o),image:ozResim(o),tag:OZ_TAG,renotify:false,silent:true,requireInteraction:true,badge:"rozet.png",data:{url:o.ders&&dpBugun()>=0?"./#ogretmen":"./#vakit"}})}
   catch(e){console.warn("özet bildirim",e)}}
 async function vakitBildirimGuncelle(){return ozetGuncelle(false)}
 async function dersBildirimGuncelle(z){return ozetGuncelle(!!z)}
