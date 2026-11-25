@@ -4,7 +4,9 @@
 const SK_SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const skNorm=t=>String(t||"").toLocaleLowerCase("tr").replace(/[âáà]/g,"a").replace(/[îí]/g,"i").replace(/[ûú]/g,"u").replace(/['’`\-.,!?]/g," ").replace(/\s+/g," ").trim();
 const skDuz=t=>skNorm(t).replace(/\s/g,"");
-function skSoyle(metin){const c=document.getElementById("skCanli");if(c)c.textContent=metin;if(S.sesliCevap===false)return;const ss=window.speechSynthesis;if(!ss)return;try{ss.cancel();const u=new SpeechSynthesisUtterance(metin);u.lang="tr-TR";u.rate=.95;const v=ss.getVoices().find(x=>/^tr/i.test(x.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
+function skBalon(duyulan,cevap){let b=document.getElementById("skBalon");if(!b){b=document.createElement("div");b.id="skBalon";b.className="sk-balon";b.onclick=()=>b.classList.remove("on");document.body.appendChild(b)}
+  if(duyulan!=null)b.dataset.d=duyulan;b.innerHTML=`${b.dataset.d?`<small>“${esc(b.dataset.d)}”</small>`:""}${cevap?`<p>${esc(cevap)}</p>`:`<p class="sk-dinle">Anlamaya çalışıyorum…</p>`}`;b.classList.add("on");clearTimeout(skBalon.t);skBalon.t=setTimeout(()=>{b.classList.remove("on");b.dataset.d=""},Math.max(6000,(cevap||"").length*75))}
+function skSoyle(metin){const c=document.getElementById("skCanli");if(c)c.textContent=metin;skBalon(null,metin);if(S.sesliCevap===false)return;const ss=window.speechSynthesis;if(!ss)return;try{ss.cancel();const u=new SpeechSynthesisUtterance(metin);u.lang="tr-TR";u.rate=.95;const v=ss.getVoices().find(x=>/^tr/i.test(x.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
 const SK_BIR={bir:1,iki:2,uc:3,"üç":3,dort:4,"dört":4,bes:5,"beş":5,alti:6,"altı":6,yedi:7,sekiz:8,dokuz:9},SK_ON={on:10,yirmi:20,otuz:30,kirk:40,"kırk":40,elli:50,altmis:60,"altmış":60,yetmis:70,"yetmiş":70,seksen:80,doksan:90,yuz:100,"yüz":100};
 function skSayi(t){const d=t.match(/\d+/);if(d)return +d[0];let top=0,var_=false;
   for(let w of t.split(" ")){w=w.replace(/(ıncı|inci|uncu|üncü|ncı|nci|ncu|ncü)$/,"").replace(/^dörd$/,"dört");
@@ -25,12 +27,52 @@ function skSureBul(t){if(!SK_SURE){SK_SURE=SURELER.map(([ad],i)=>({n:i+1,k:skAn(
 const SK_SAYFA=[[/(ana sayfa|anasayfa|bugün|başa dön|giriş)/,"home","Ana sayfa"],[/(namaz vakit|vakitler|ezan|imsakiye|vakitleri)/,"vakit","Namaz vakitleri"],[/kıble|kible|pusula/,"kible","Kıble pusulası"],
   [/zikir|tesbih|zikirmatik/,"zikir","Zikir"],[/hadis/,"hadisler","Hadis ansiklopedisi"],[/grup/,"grup","Grup okuma"],[/kitaplık|kitaplik|kitaplar/,"kitaplik","Kitaplık"],[/siyer/,"siyer","Siyer-i Nebî"],
   [/peygamber/,"peygamber","Peygamberler"],[/sahabe/,"sahabe","Sahabeler"],[/hava/,"hava","Hava durumu"],[/dini gün|kandil/,"gunler","Dini günler"],[/cevşen/,"cevsen","Cevşen"],
-  [/ekran resmi|duvar kağıdı|duvar kâğıdı/,"duvar","Telefon ekranı"],[/ders program|derslerim|bugun hangi ders|siradaki ders/,"ogretmen","Ders programı"],[/ayarlar/,"ayarlar","Ayarlar"],[/hatim|plan/,"cuz","Hatim ve plan"],[/kuran|kur an|mushaf/,"kuran","Kur'an-ı Kerîm sure listesi"]];
-const SK_YARDIM="Şunları sorabilirsiniz: Namaza kaç dakika var. Akşam ezanı kaçta. Bugünkü vakitler. Hava nasıl. Yarın yağmur var mı. Saat kaç. Bugün ne günü. Sıradaki kandil ne zaman. Günün ayeti. Günün hadisi. Yasin suresini oku. Beşinci cüzü dinle. Kıble. Geri. Dur.";
+  [/ekran resmi|duvar kağıdı|duvar kâğıdı/,"duvar","Telefon ekranı"],[/ayarlar/,"ayarlar","Ayarlar"],[/hatim|plan/,"cuz","Hatim ve plan"],[/kuran|kur an|mushaf/,"kuran","Kur'an-ı Kerîm sure listesi"]];
+const SK_YARDIM="Şunları sorabilirsiniz: Bugün derslerim ne. Bugün hangi sınıflara giriyorum. Sıradaki dersim ne. Yarın derslerim. Altı F ile ne zaman dersim var. Namaza kaç dakika var. Akşam ezanı kaçta. Bugünkü vakitler. Hava nasıl. Yarın yağmur var mı. Saat kaç. Bugün ne günü. Sıradaki kandil ne zaman. Günün ayeti. Günün hadisi. Yasin suresini oku. Beşinci cüzü dinle. Kıble. Geri. Dur.";
 const skSaat=hhmm=>{const [h,m]=String(hhmm).split(":").map(Number);return m?`${h} ${String(m).padStart(2,"0")}`:`${h}`};
 const skSure_=dk=>{const sa=Math.floor(dk/60),d=dk%60;return (sa?sa+" saat ":"")+(d||!sa?d+" dakika":"")};
 const SK_VAKIT=[[/imsak|sabah|sahur/,0],[/gunes|guneş|dogus/,1],[/ogle|cuma namaz/,2],[/ikindi/,3],[/aksam|iftar/,4],[/yatsi/,5]];
+
+/* ----- Ders programı soruları ----- */
+const SK_GUNLER=[["pazartesi",0],["sali",1],["carsamba",2],["persembe",3],["cuma",4]];
+function skDersGun(a){if(/yarin/.test(a)){const g=new Date();g.setDate(g.getDate()+1);const d=g.getDay();return{gi:d>=1&&d<=5?d-1:-1,ad:"Yarın",hs:d===0||d===6}}
+  if(/cumartesi|pazar(?!tesi)/.test(a))return{gi:-1,ad:/cumartesi/.test(a)?"Cumartesi":"Pazar",hs:true};
+  const g=SK_GUNLER.find(([k])=>new RegExp("(^| )"+k).test(a));if(g)return{gi:g[1],ad:DP_GUN[g[1]],hs:false};
+  const b=dpBugun();return{gi:b,ad:"Bugün",hs:b<0,bugun:true}}
+function skSinifAra(a){const m=a.match(/(^| )(\d{1,2}|bes|alti|yedi|sekiz)\s*\/?\s*-?\s*([a-h])(?= |$)/);if(!m)return null;const n={bes:5,alti:6,yedi:7,sekiz:8}[m[2]]||+m[2];return (n+"/"+m[3]).toLocaleUpperCase("tr")}
+const skDersAd=c=>`${c.s?c.s+" ":""}${(c.d||"ders").toLocaleLowerCase("tr")}`;
+function skDersListe(gi){const D=dpVeri(),out=[];let son=null;
+  D.gun[gi].forEach((c,i)=>{if(!dpDolu(c))return;const anahtar=(c.s||"")+"|"+(c.d||"");if(son&&son.anahtar===anahtar&&son.bit===i-1){son.bit=i;return}son={anahtar,bas:i,bit:i,c};out.push(son)});
+  return out.map(g=>`${g.bas===g.bit?g.bas+1+". ders":g.bas+1+". ve "+(g.bit+1)+". dersler"}, saat ${skSaat(D.saat[g.bas][0])}: ${skDersAd(g.c)}`)}
+function skDers(a){
+  if(!/(ders|sinif|sinifa|sinifim|bos saat|bos dersim|teneffus|okula|okul kacta)/.test(a)&&!(/(kacta bit|ne zaman bit|kacta basl|ne zaman basl|okul)/.test(a)))return false;
+  if(/program\w* (ac|goster)|ders programi$/.test(a)&&!/(ne|hangi|kac|neler)/.test(a)){go("ogretmen");skSoyle("Ders programınız açıldı.");return true}
+  if(!S.ders||!S.ders.gun||!S.ders.gun.some(g=>g.some(dpDolu))){go("ogretmen");skSoyle("Henüz ders programı girmediniz. Ders programı sayfası açıldı; programınızın fotoğrafını çekerek ekleyebilirsiniz.");return true}
+  const D=dpVeri(),sinif=skSinifAra(a);
+  if(sinif){const l=[];D.gun.forEach((g,gi)=>g.forEach((c,i)=>{if((c.s||"").toLocaleUpperCase("tr")===sinif)l.push(`${DP_GUN[gi]} ${i+1}. ders, saat ${skSaat(D.saat[i][0])}`)}));go("ogretmen");
+    skSoyle(l.length?`${sinif} sınıfıyla haftada ${l.length} dersiniz var: ${l.join("; ")}.`:`Programınızda ${sinif} sınıfı bulunamadı.`);return true}
+  const {gi,ad,hs,bugun}=skDersGun(a);
+  if(hs||gi<0){skSoyle(`${ad} hafta sonu, dersiniz yok.`);return true}
+  go("ogretmen-"+gi);const l=dpGunDersleri(gi),gunAd=bugun?`Bugün ${DP_GUN[gi].toLocaleLowerCase("tr")}`:ad;
+  if(!l.length){skSoyle(`${gunAd} dersiniz yok.`);return true}
+  if(bugun&&/(simdi|su an|su anda|hangi dersteyim|neredeyim)/.test(a)){const sl=dpSlotAkt();
+    if(!sl){skSoyle("Bugünkü dersleriniz bitti.");return true}
+    const c=D.gun[gi][sl.i];
+    if(sl.tur==="simdi"&&dpDolu(c)){skSoyle(`Şu an ${sl.i+1}. ders: ${skDersAd(c)}. Bitiş saati ${skSaat(D.saat[sl.i][1])}.`);return true}
+    const sm=dpSimdi();skSoyle(`${sl.tur==="simdi"?"Şu an boş saatiniz.":"Şu an ders saati değil."}${sm&&sm.c?` Sıradaki dersiniz ${skDersAd(sm.c)}, saat ${skSaat(sm.c.bas)}.`:" Bugün başka dersiniz yok."}`);return true}
+  if(bugun&&/(siradaki|sonraki|bir sonraki|gelecek ders)/.test(a)){const sm=dpSimdi();
+    if(!sm||!sm.c){skSoyle("Bugün başka dersiniz kalmadı.");return true}
+    const dk=(()=>{const [h,m]=sm.c.bas.split(":").map(Number),n=new Date();return h*60+m-(n.getHours()*60+n.getMinutes())})();
+    skSoyle(`${sm.tur==="simdi"?"Şu anki dersiniz":"Sıradaki dersiniz"} ${sm.c.i+1}. ders: ${skDersAd(sm.c)}, saat ${skSaat(sm.c.bas)}${sm.tur==="sonraki"&&dk>0?`. ${skSure_(dk)} sonra başlıyor`:""}.`);return true}
+  if(/bos/.test(a)){const b=[];D.saat.forEach((z,i)=>{if(i<=l[l.length-1].i&&i>=l[0].i&&!dpDolu(D.gun[gi][i]))b.push(`${i+1}. ders, saat ${skSaat(z[0])}`)});
+    skSoyle(b.length?`${gunAd} boş saatleriniz: ${b.join("; ")}.`:`${gunAd} derslerinizin arasında boş saatiniz yok.`);return true}
+  if(/(kacta bit|ne zaman bit|son ders|kacta cik)/.test(a)){const s=l[l.length-1];skSoyle(`${gunAd} son dersiniz ${s.i+1}. ders, ${skDersAd(s)}. Bitiş saati ${skSaat(s.bit)}.`);return true}
+  if(/(kacta basl|ilk ders|ne zaman basl|okula kacta)/.test(a)){const s=l[0];skSoyle(`${gunAd} ilk dersiniz ${s.i+1}. ders, ${skDersAd(s)}. Başlangıç saati ${skSaat(s.bas)}.`);return true}
+  const siniflar=[...new Set(l.map(c=>c.s).filter(Boolean))];
+  if(/(hangi sinif|sinif)/.test(a)&&siniflar.length){skSoyle(`${gunAd} ${siniflar.join(", ")} sınıflarına giriyorsunuz. Toplam ${l.length} ders. ${skDersListe(gi).join(". ")}.`);return true}
+  skSoyle(`${gunAd} ${l.length} dersiniz var, saat ${skSaat(l[0].bas)} ile ${skSaat(l[l.length-1].bit)} arası. ${skDersListe(gi).join(". ")}.`);return true}
 async function skBilgi(a){
+  if(skDers(a))return true;
   const vakitSoru=/(namaz|vakit|ezan|imsak|sabah|ogle|ikindi|aksam|yatsi|iftar|sahur)/.test(a),zamanSoru=/(kac|ne zaman|kaldi|saat|var mi|ne kadar|siradaki|sonraki|bugunku|bugun)/.test(a);
   if(vakitSoru&&(zamanSoru||/vakitler/.test(a))){
     if(!S.il){skSoyle("Önce şehrinizi seçmeniz gerekiyor.");ilSec();return true}
@@ -92,7 +134,7 @@ function skBasla(){const b=document.getElementById("skMik");
   skTanima.onstart=()=>{skDinliyor=true;b&&b.classList.add("on");b&&b.setAttribute("aria-label","Dinliyorum. Durdurmak için dokunun")};
   skTanima.onend=()=>{skDinliyor=false;b&&b.classList.remove("on");b&&b.setAttribute("aria-label","Sesli komut. Dokunup konuşun")};
   skTanima.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed")skSoyle("Mikrofon izni verilmedi. Telefon ayarlarından izin verin.");else if(e.error==="no-speech")skSoyle("Ses duyamadım, tekrar deneyin.")};
-  skTanima.onresult=e=>{const r=e.results[0];let en=r[0].transcript;for(let i=0;i<r.length;i++){const x=r[i].transcript,ax=skAn(x);if(/c[uü][zs]|vakit|kible|zikir|hadis|ana sayfa|geri|dur|devam|yardim/.test(ax)||skSureBul(x)){en=x;break}}skKomut(en)};
+  skTanima.onresult=e=>{const r=e.results[0];let en=r[0].transcript;for(let i=0;i<r.length;i++){const x=r[i].transcript,ax=skAn(x);if(/c[uü][zs]|vakit|kible|zikir|hadis|ana sayfa|geri|dur|devam|yardim/.test(ax)||skSureBul(x)){en=x;break}}skBalon(en,"");skKomut(en)};
   try{skTanima.start()}catch(e){}}
 function skDugme(){if(document.getElementById("skMik"))return;
   document.body.insertAdjacentHTML("beforeend",`<button id="skMik" class="sk-mik" aria-label="Sesli komut. Dokunup konuşun"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button><div id="skCanli" class="gizli-okunur" aria-live="polite"></div>`);

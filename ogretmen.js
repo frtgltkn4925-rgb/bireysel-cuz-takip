@@ -211,19 +211,22 @@ async function dersBildirimAcKapa(){const D=dpVeri();
 function dpSlotAkt(){const n=new Date(),dk=n.getHours()*60+n.getMinutes(),m=t=>{const [h,mm]=String(t||"0:0").split(":").map(Number);return h*60+mm},Sa=dpVeri().saat;
   for(let i=0;i<Sa.length;i++){if(dk<m(Sa[i][0]))return{i,tur:"sonraki"};if(dk<=m(Sa[i][1]))return{i,tur:"simdi"}}return null}
 // Android geniş bildirim görselini yaklaşık 2:1 gösterir; 8 ders 2 sütun × 4 satır olarak dizilir, boş saatler de görünür
-function dpResim(gi,haftaSonu,akt){const D=dpVeri(),W=720,H=360,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+function dpResim(gi,haftaSonu,akt,aktTur){aktTur=aktTur||"simdi";const D=dpVeri(),W=720,H=360,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
   const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,"#1c2f5e");g.addColorStop(1,"#2b4c8c");x.fillStyle=g;x.fillRect(0,0,W,H);
   x.textAlign="left";x.fillStyle="#ffd27a";x.font="700 27px Manrope,sans-serif";x.fillText(haftaSonu?"Hafta sonu":`${DP_GUN[gi]} · Ders programı`,26,42);
   x.textAlign="right";x.fillStyle="rgba(255,255,255,.7)";x.font="500 21px Manrope,sans-serif";x.fillText(new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long"}),W-26,42);
   if(haftaSonu){x.textAlign="center";x.fillStyle="#fff";x.font="600 30px Manrope,sans-serif";x.fillText("Bugün ders yok, iyi dinlenmeler.",W/2,H/2+20);return c.toDataURL("image/png")}
   const n=Math.min(8,D.saat.length),cw=(W-40)/2,ch=72;
   for(let i=0;i<n;i++){const col=i<4?0:1,row=i%4,cx=20+col*cw,cy=60+row*(ch+4),c0=D.gun[gi][i]||{},dolu=dpDolu(c0),on=i===akt;
-    x.fillStyle=on?"#f5a623":dolu?"rgba(255,255,255,.13)":"rgba(255,255,255,.04)";rr(x,cx+4,cy,cw-8,ch,14);x.fill();
-    if(!dolu&&!on){x.save();x.setLineDash([6,5]);x.strokeStyle="rgba(255,255,255,.22)";x.lineWidth=1.5;rr(x,cx+4,cy,cw-8,ch,14);x.stroke();x.restore()}
-    const yaz=on?"#1c2f5e":dolu?"#fff":"rgba(255,255,255,.5)";
-    x.textAlign="left";x.fillStyle=on?"#1c2f5e":"rgba(255,255,255,.65)";x.font="600 17px Manrope,sans-serif";x.fillText(`${i+1}. ders · ${D.saat[i][0]||""}`,cx+18,cy+25);
+    const simdi=on&&aktTur==="simdi",sira=on&&aktTur!=="simdi";
+    x.fillStyle=simdi?"#22c55e":dolu?"rgba(255,255,255,.13)":"rgba(255,255,255,.04)";rr(x,cx+4,cy,cw-8,ch,14);x.fill();
+    if(sira){x.strokeStyle="#f5a623";x.lineWidth=4;rr(x,cx+6,cy+2,cw-12,ch-4,13);x.stroke()}
+    else if(!dolu&&!simdi){x.save();x.setLineDash([6,5]);x.strokeStyle="rgba(255,255,255,.22)";x.lineWidth=1.5;rr(x,cx+4,cy,cw-8,ch,14);x.stroke();x.restore()}
+    const yaz=simdi?"#052e16":dolu?"#fff":"rgba(255,255,255,.5)";
+    x.textAlign="left";x.fillStyle=simdi?"#052e16":sira?"#ffd27a":"rgba(255,255,255,.65)";x.font="600 17px Manrope,sans-serif";x.fillText(`${i+1}. ders · ${D.saat[i][0]||""}`,cx+18,cy+25);
+    if(on){x.textAlign="right";x.font="800 14px Manrope,sans-serif";x.fillStyle=simdi?"#052e16":"#ffd27a";x.fillText(simdi?"ŞU AN":"SIRADAKİ",cx+cw-20,cy+24);x.textAlign="left"}
     x.fillStyle=yaz;x.font=dolu?"700 23px Manrope,sans-serif":"italic 500 22px Manrope,sans-serif";let ad=dolu?(c0.d||"Ders"):"Boş saat";while(x.measureText(ad).width>cw-120&&ad.length>4)ad=ad.slice(0,-2)+"…";x.fillText(ad,cx+18,cy+56);
-    if(dolu&&c0.s){x.textAlign="right";x.font="800 24px Manrope,sans-serif";x.fillText(c0.s,cx+cw-20,cy+56)}}
+    if(dolu&&c0.s){x.textAlign="right";x.fillStyle=yaz;x.font="800 24px Manrope,sans-serif";x.fillText(c0.s,cx+cw-20,cy+56)}}
   return c.toDataURL("image/png")}
 async function dersBildirimGuncelle(zorla){const D=S.ders;
   if(!D||!D.bildirim||typeof Notification==="undefined"||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
@@ -232,8 +235,8 @@ async function dersBildirimGuncelle(zorla){const D=S.ders;
     const sonraki=sm&&sm.c?`${sm.c.d||"Ders"}${sm.c.s?" · "+sm.c.s:""} (${sm.c.bas})`:"";
     const baslik=gi<0?"Bugün ders yok":!l.length?`${DP_GUN[gi]} · Ders girilmemiş`:bosSimdi?`Boş saat${sm&&sm.tur==="sonraki"?" · Sıradaki: "+sonraki:""}`:sm&&sm.c?`${sm.tur==="simdi"?"Şu an":"Sıradaki"}: ${sonraki}`:`${DP_GUN[gi]} · Dersler bitti`;
     const r=await navigator.serviceWorker.ready,eski=(await r.getNotifications({tag:"bct-ders"}))[0];
-    if(!zorla&&eski&&eski.title===baslik&&eski.data&&eski.data.gun===bugunISO())return;
-    await r.showNotification(baslik,{body:"",image:dpResim(gi<0?0:gi,gi<0,akt),tag:"bct-ders",renotify:false,silent:true,requireInteraction:true,icon:"icon-192.png",badge:"rozet.png",data:{url:"./#ogretmen",gun:bugunISO()}})}catch(e){console.warn("ders bildirimi",e)}}
+    const imza=akt+"|"+(sl?sl.tur:"");if(!zorla&&eski&&eski.title===baslik&&eski.data&&eski.data.gun===bugunISO()&&eski.data.imza===imza)return;
+    await r.showNotification(baslik,{body:"",image:dpResim(gi<0?0:gi,gi<0,akt,sl?sl.tur:"simdi"),tag:"bct-ders",renotify:false,silent:true,requireInteraction:true,icon:"icon-192.png",badge:"rozet.png",data:{url:"./#ogretmen",gun:bugunISO(),imza:akt+"|"+(sl?sl.tur:"")}})}catch(e){console.warn("ders bildirimi",e)}}
 setTimeout(()=>dersBildirimGuncelle(false),3000);setInterval(()=>dersBildirimGuncelle(false),60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)dersBildirimGuncelle(false)});
 function dpKart(){const D=S.ders,gi=dpBugun();
