@@ -70,7 +70,7 @@ async function okuyucu(k,opt={}){
   document.body.appendChild(el);document.body.style.overflow="hidden";
   const M=el.querySelector("#metin"),bilgi=el.querySelector("#bilgi"),dinleB=el.querySelector("#dinle"),hiz=el.querySelector("#hiz"),hizEt=el.querySelector("#hizEt"),kayB=el.querySelector("#kay");
   let liste=[],sira=-1,caliyor=false,deneme=0,kaydir=false,raf=0,son=0,birikim=0,dy=0,tanima=null,mikAcik=false;
-  const au=new Audio();au.preload="auto";const sonraki=new Audio();sonraki.preload="auto";
+  const au=window.OKU_AU||(window.OKU_AU=new Audio());au.preload="auto";const sonraki=new Audio();sonraki.preload="auto";
 
   // yazı ve hız
   const yaz=()=>{el.style.setProperty("--yb",yb+"px");ls.set("no.yb",yb)};
@@ -94,7 +94,7 @@ async function okuyucu(k,opt={}){
     sira=i;const it=liste[i];caliyor=true;dinleB.textContent="⏸";vurgula(it);bilgi.textContent=`${SURELER[it.s-1][0]} ${it.n}`;
     const yerel=await SDB.al(imam+"/"+it.g);if(sira!==i)return;
     if(yerel){if(au.dataset.u)URL.revokeObjectURL(au.dataset.u);au.dataset.u=URL.createObjectURL(yerel);deneme=9;au.src=au.dataset.u}else{deneme=0;au.src=sesAdres(imam,it.g,0)}
-    au.play().catch(()=>{});
+    au.play().catch(e=>{if(e&&e.name==="NotAllowedError"&&sira===i){sesDur();bilgi.textContent="Dinlemek için ▶ düğmesine dokunun";bildir("Telefon sesi kendiliğinden başlatmaya izin vermedi. ▶ düğmesine dokunun.")}});
     const nx=liste[i+1];if(nx&&!(await SDB.al(imam+"/"+nx.g))){sonraki.src=sesAdres(imam,nx.g,0);sonraki.load()}};
   au.onended=()=>{if(caliyor)cal(sira+1)};
   au.onerror=()=>{if(sira<0||!caliyor)return;if(deneme>=9)deneme=-1;deneme++;if(deneme<4){au.src=sesAdres(imam,liste[sira].g,deneme);au.play().catch(()=>{})}else{bildir("Bu ayetin sesi açılamadı, sonrakine geçiliyor");cal(sira+1)}};
