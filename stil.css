@@ -298,3 +298,18 @@ pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding
 .gizli-okunur{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .sk-liste{margin:0;padding-left:18px;line-height:1.7}
 @media (prefers-reduced-motion:reduce){.sk-mik.on{animation:none}}
+/* Öğretmen ders programı */
+.dp-ust{display:flex;justify-content:space-between;gap:12px;align-items:center;background:linear-gradient(135deg,#1c2f5e,#2b4c8c);color:#fff;border-radius:20px;padding:18px}
+.dp-ust b{display:block;font:700 20px var(--serif)}.dp-ust span{font-size:13.5px;opacity:.8}
+.dp-simdi{background:#f5a623;color:#1c2f5e;border-radius:14px;padding:8px 12px;text-align:right;min-width:120px}
+.dp-simdi small{display:block;font-weight:700;font-size:11.5px}.dp-simdi b{font:700 16px 'Manrope',sans-serif}.dp-simdi span{font-size:12.5px;opacity:1}
+.dp-tablo{padding:6px 10px;margin-top:10px}
+.dp-sat{display:grid;grid-template-columns:52px 1fr 78px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.dp-sat:last-child{border-bottom:0}.dp-sat.on{background:#fff4e0;border-radius:12px;padding:6px}
+.dp-no{font:800 17px 'Manrope',sans-serif;color:var(--h1);text-align:center;line-height:1.1}.dp-no small{display:block;font-weight:600;font-size:11px;color:var(--muted)}
+.dp-sat .in{padding:9px 10px;margin:0}.dp-sinif{text-transform:uppercase;text-align:center;font-weight:700}
+.dp-saatler{display:grid;gap:8px;margin-top:10px}.dp-saatler label{display:flex;align-items:center;gap:6px;font-size:14px}.dp-saatler .in{padding:6px;margin:0;width:auto}
+.dp-foto{width:100%;border-radius:14px;border:1px solid var(--line)}
+.dp-bar{height:8px;background:var(--line);border-radius:9px;overflow:hidden}.dp-bar i{display:block;height:100%;width:0;background:var(--h1);transition:width .3s}
+.dp-onizle{overflow:auto;max-height:50vh}.dp-onizle table{border-collapse:collapse;font-size:12px;width:100%}.dp-onizle th,.dp-onizle td{border:1px solid var(--line);padding:4px;vertical-align:top}
+.dp-kart .ico{background:#e6ecf8;color:#2b4c8c}

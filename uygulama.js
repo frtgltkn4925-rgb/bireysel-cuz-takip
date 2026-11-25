@@ -80,8 +80,8 @@ function save(){S.t=Date.now();try{localStorage.setItem(LK,JSON.stringify(S))}ca
 /* ============ YÖNLENDİRME ============ */
 let cur={v:"home",p:null};
 const TABS=[["home","Bugün","home"],["kuran","Kur'an","quran"],["grup","Grup","group"],["vakit","Vakitler","clock"],["zikir","Zikir","tesbih"],["kitaplik","Kitaplık","books"]];
-const TITLES={home:"Bireysel Cüz Takip",kuran:"Kur'an-ı Kerîm",sure:"",cuz:"Hatim ve Plan",hadis:"Sahih Hadisler",cevsen:"Cevşen-ül Kebîr",tesbihat:"Namaz Tesbihatı",kitaplik:"Kitaplık",pdf:"",ayarlar:"Ayarlar",kayit:"Kaydettiklerim",duvar:"Telefon Ekranı",vakit:"Namaz Vakitleri",zikir:"Zikir",gunler:"Dini Günler",siyer:"Siyer-i Nebî",peygamber:"Peygamberler",sahabe:"Sahabeler",hava:"Hava Durumu",grup:"Grup okuma",kible:"Kıble Pusulası",hadisler:"Hadis Ansiklopedisi",oku:""};
-const TABOF={sure:"kuran",cuz:"kuran",pdf:"kitaplik",hadis:"kitaplik",siyer:"kitaplik",peygamber:"kitaplik",sahabe:"kitaplik",cevsen:"zikir",tesbihat:"zikir",kayit:"home",duvar:"home",gunler:"home",hava:"vakit",kible:"vakit",hadisler:"kitaplik",ayarlar:"home"};
+const TITLES={home:"Bireysel Cüz Takip",kuran:"Kur'an-ı Kerîm",sure:"",cuz:"Hatim ve Plan",hadis:"Sahih Hadisler",cevsen:"Cevşen-ül Kebîr",tesbihat:"Namaz Tesbihatı",kitaplik:"Kitaplık",pdf:"",ayarlar:"Ayarlar",kayit:"Kaydettiklerim",duvar:"Telefon Ekranı",vakit:"Namaz Vakitleri",zikir:"Zikir",gunler:"Dini Günler",siyer:"Siyer-i Nebî",peygamber:"Peygamberler",sahabe:"Sahabeler",hava:"Hava Durumu",grup:"Grup okuma",kible:"Kıble Pusulası",hadisler:"Hadis Ansiklopedisi",ogretmen:"Öğretmen Ders Programı",oku:""};
+const TABOF={sure:"kuran",cuz:"kuran",pdf:"kitaplik",hadis:"kitaplik",siyer:"kitaplik",peygamber:"kitaplik",sahabe:"kitaplik",cevsen:"zikir",tesbihat:"zikir",kayit:"home",duvar:"home",gunler:"home",hava:"vakit",kible:"vakit",hadisler:"kitaplik",ogretmen:"home",ayarlar:"home"};
 function go(h){location.hash=h}
 function parse(){const h=(location.hash||"#home").slice(1);const m=h.match(/^([a-z]+)(?:-(.+))?$/);return m&&TITLES[m[1]]!==undefined?{v:m[1],p:m[2]||null}:{v:"home",p:null}}
 window.addEventListener("hashchange",()=>{cur=parse();render();window.scrollTo(0,0)});
@@ -94,7 +94,7 @@ function render(){
   const on=TABOF[cur.v]||cur.v;
   $("#tabs").innerHTML=TABS.map(([v,l,i])=>`<button class="${on===v?"on":""}" data-go="${v}" ${on===v?'aria-current="page"':""}>${ic(i,23)}<span>${l}</span></button>`).join("");
   const el=$("#view");el.onclick=null;
-  ({home:vHome,kuran:vKuran,sure:vSure,cuz:vCuz,hadis:vHadis,cevsen:vCevsen,tesbihat:vTesbihat,kitaplik:vKitaplik,pdf:vPdf,ayarlar:vAyarlar,kayit:vKayit,duvar:vDuvar,vakit:vVakit,zikir:vZikir,gunler:vGunler,siyer:vSiyer,peygamber:vPeygamber,sahabe:vSahabe,hava:vHava,grup:vGrup,kible:vKible,hadisler:vHadisler}[cur.v]||vHome)(el);
+  ({home:vHome,kuran:vKuran,sure:vSure,cuz:vCuz,hadis:vHadis,cevsen:vCevsen,tesbihat:vTesbihat,kitaplik:vKitaplik,pdf:vPdf,ayarlar:vAyarlar,kayit:vKayit,duvar:vDuvar,vakit:vVakit,zikir:vZikir,gunler:vGunler,siyer:vSiyer,peygamber:vPeygamber,sahabe:vSahabe,hava:vHava,grup:vGrup,kible:vKible,hadisler:vHadisler,ogretmen:vOgretmen}[cur.v]||vHome)(el);
 }
 
 /* ============ FAVORİ / SEPET ============ */

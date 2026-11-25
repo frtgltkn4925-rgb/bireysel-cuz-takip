@@ -266,6 +266,7 @@ async function vBugun(el){
    <div id="vk">${S.il?`<div class="spin" style="border-top-color:#fff"></div>`:`<p class="h-bos">Namaz vakitleri ve hava durumu için şehrinizi seçin.</p>`}</div>
    <div class="h-hava" id="hv"></div></section>
   <div class="hizli">${hizli.map(([g,i,t])=>`<button data-go="${g}"><span>${ic(i,22)}</span>${t}</button>`).join("")}</div>
+  <h2 class="sec">Öğretmenler için</h2><div class="rows dp-kart">${dpKart()}</div>
   ${S.son?`<div class="card devam" data-go="sure-${S.son.s}-a${S.son.a}"><div class="ico2">${ic("bm",20)}</div><div><span class="muted small">Kaldığınız yer</span><b>${esc(SURELER[S.son.s-1][0])} · ${S.son.a}. ayet</b></div><span class="chev">${ic("chev",18)}</span></div>`:""}
   <h2 class="sec">Grup okuma</h2>${grupKarti()}
   ${planKart()}

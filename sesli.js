@@ -25,7 +25,7 @@ function skSureBul(t){if(!SK_SURE){SK_SURE=SURELER.map(([ad],i)=>({n:i+1,k:skAn(
 const SK_SAYFA=[[/(ana sayfa|anasayfa|bugün|başa dön|giriş)/,"home","Ana sayfa"],[/(namaz vakit|vakitler|ezan|imsakiye|vakitleri)/,"vakit","Namaz vakitleri"],[/kıble|kible|pusula/,"kible","Kıble pusulası"],
   [/zikir|tesbih|zikirmatik/,"zikir","Zikir"],[/hadis/,"hadisler","Hadis ansiklopedisi"],[/grup/,"grup","Grup okuma"],[/kitaplık|kitaplik|kitaplar/,"kitaplik","Kitaplık"],[/siyer/,"siyer","Siyer-i Nebî"],
   [/peygamber/,"peygamber","Peygamberler"],[/sahabe/,"sahabe","Sahabeler"],[/hava/,"hava","Hava durumu"],[/dini gün|kandil/,"gunler","Dini günler"],[/cevşen/,"cevsen","Cevşen"],
-  [/ekran resmi|duvar kağıdı|duvar kâğıdı/,"duvar","Telefon ekranı"],[/ayarlar/,"ayarlar","Ayarlar"],[/hatim|plan/,"cuz","Hatim ve plan"],[/kuran|kur an|mushaf/,"kuran","Kur'an-ı Kerîm sure listesi"]];
+  [/ekran resmi|duvar kağıdı|duvar kâğıdı/,"duvar","Telefon ekranı"],[/ders program|derslerim|bugun hangi ders|siradaki ders/,"ogretmen","Ders programı"],[/ayarlar/,"ayarlar","Ayarlar"],[/hatim|plan/,"cuz","Hatim ve plan"],[/kuran|kur an|mushaf/,"kuran","Kur'an-ı Kerîm sure listesi"]];
 const SK_YARDIM="Şunları sorabilirsiniz: Namaza kaç dakika var. Akşam ezanı kaçta. Bugünkü vakitler. Hava nasıl. Yarın yağmur var mı. Saat kaç. Bugün ne günü. Sıradaki kandil ne zaman. Günün ayeti. Günün hadisi. Yasin suresini oku. Beşinci cüzü dinle. Kıble. Geri. Dur.";
 const skSaat=hhmm=>{const [h,m]=String(hhmm).split(":").map(Number);return m?`${h} ${String(m).padStart(2,"0")}`:`${h}`};
 const skSure_=dk=>{const sa=Math.floor(dk/60),d=dk%60;return (sa?sa+" saat ":"")+(d||!sa?d+" dakika":"")};
