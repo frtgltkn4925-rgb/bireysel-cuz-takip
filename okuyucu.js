@@ -48,17 +48,22 @@ const SDB={db:null,ac(){return this.db?Promise.resolve(this.db):new Promise((res
  async koy(k,v){const d=await this.ac();return new Promise((res,rej)=>{const t=d.transaction("s","readwrite");t.objectStore("s").put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}};
 async function sesIndir(im,g){for(let i=0;i<4;i++){try{const r=await fetch(sesAdres(im,g,i));if(r.ok){const b=await r.blob();if(b.size>800)return b}}catch(e){}}return null}
 
+/* ===== Sayfa bilgisi (Medine mushafı, 604 sayfa) ===== */
+let SAYFA_REF=null;try{SAYFA_REF=JSON.parse(ls.get("no.sayfaref")||"null")}catch(e){}
+async function sayfaMeta(){if(SAYFA_REF)return SAYFA_REF;try{const r=await fetch("https://api.alquran.cloud/v1/meta");const j=await r.json();const ref=j.data.pages.references.map(x=>[x.surah,x.ayah]);if(ref.length>600){SAYFA_REF=ref;ls.set("no.sayfaref",JSON.stringify(ref))}}catch(e){}return SAYFA_REF}
+const sayfaBul=(s,a)=>{let lo=0,hi=SAYFA_REF.length-1;while(lo<hi){const m=(lo+hi+1)>>1,[rs,ra]=SAYFA_REF[m];if(rs<s||(rs===s&&ra<=a))lo=m;else hi=m-1}return lo+1};
+function sureSayfalari(s){if(!SAYFA_REF)return null;return[sayfaBul(s,1),sayfaBul(s,SURELER[s-1][1])]}
 /* ===== Okuyucu ===== */
-let yb=+ls.get("no.yb")||32;
+let yb=+ls.get("no.yb")||34;
 async function okuyucu(k,opt={}){
   const s0=(S.cuz[k]||{}).d;let imam=ls.get("no.imam")||IMAMLAR[0][0];
-  const el=document.createElement("div");el.className="oku";el.style.setProperty("--yb",yb+"px");
-  el.innerHTML=`<div class="oust"><button class="ik" id="kapat" aria-label="Kapat">✕</button><b>${k}. Cüz</b><button class="ik" id="lat" aria-label="Latin okunuş">Aa</button><button class="ik" id="kucuk" aria-label="Yazıyı küçült">A−</button><button class="ik" id="buyuk" aria-label="Yazıyı büyüt">A+</button></div>
+  const el=document.createElement("div");el.className="oku yeni";el.style.setProperty("--yb",yb+"px");
+  el.innerHTML=`<div class="oust"><button class="ik geri" id="kapat" aria-label="Geri">←</button><div class="ubas"><b id="uSure">${k}. Cüz</b><span id="uSayfa">${k}. Cüz</span></div><select class="hap" id="lat" aria-label="Görünüm"><option value="0">Arapça</option><option value="1">Okunuşlu</option></select></div>
    <div class="metin" id="metin"><div class="donen"></div></div>
    <div class="dok"><div>
      <div class="sat"><button class="yb" id="dinle" aria-label="Dinle">▶</button><select id="imam" aria-label="İmam">${IMAMLAR.map(([v,n])=>`<option value="${v}" ${v===imam?"selected":""}>${n}</option>`).join("")}</select><button class="kb" id="indir" aria-label="Sesi telefona indir">⬇ İndir</button></div>
      <div class="sat"><button class="kb" id="kay" aria-label="Otomatik kaydır">⇣ Kaydır</button><input type="range" id="hiz" min="1" max="10" value="${+(ls.get("no.hiz")||4)}" aria-label="Okuma hızı"><span class="et" id="hizEt"></span></div>
-     <div class="sat"><button class="kb" id="mik" aria-label="Sesli komut">🎤</button><button class="kb" id="gizle" aria-label="Kontrolleri gizle">⤢</button>${s0?`<button class="okudum" disabled style="opacity:.6">✓ Okundu</button>`:`<button class="okudum" id="okudum">✓ Cüzü okudum</button>`}</div>
+     <div class="sat"><button class="kb" id="mik" aria-label="Sesli komut">🎤</button><button class="kb" id="kucuk" aria-label="Yazıyı küçült">A−</button><button class="kb" id="buyuk" aria-label="Yazıyı büyüt">A+</button><button class="kb" id="gizle" aria-label="Kontrolleri gizle">⤢</button>${s0?`<button class="okudum" disabled style="opacity:.6">✓ Okundu</button>`:`<button class="okudum" id="okudum">✓ Cüzü okudum</button>`}</div>
      <div class="sat" style="min-height:16px"><span class="et" id="bilgi" style="flex:1">Hazır</span><span class="et" id="mikEt">🎤 “dur” · “devam”</span></div>
    </div></div>
    <button class="goster" id="goster">Kontrolleri göster</button>`;
@@ -146,8 +151,16 @@ async function okuyucu(k,opt={}){
     else try{const y=JSON.parse(ls.get(yerKey)||"null");const sp=y&&M.querySelector(`[data-g="${y.g}"]`);
       if(sp){M.scrollTop=Math.max(0,sp.getBoundingClientRect().top-M.getBoundingClientRect().top+M.scrollTop-60);sp.classList.add("su");setTimeout(()=>sp.classList.remove("su"),2500);
         bildir(`Kaldığın yerden devam: ${SURELER[y.s-1][0]} ${y.n}. ayet`,()=>{M.scrollTop=0;try{localStorage.removeItem(yerKey)}catch(e){}},"Baştan")}}catch(e){}
-    let latin=ls.get("no.lat")==="1";const latYaz=()=>{el.querySelector("#lat").classList.toggle("on",latin);M.querySelectorAll(".lat").forEach(x=>x.classList.toggle("hide",!latin));M.querySelectorAll(".ayetler").forEach(x=>x.classList.toggle("latinli",latin));ls.set("no.lat",latin?"1":"0")};
-    latYaz();el.querySelector("#lat").onclick=()=>{latin=!latin;latYaz()};
+    let latin=ls.get("no.lat")==="1";const latSec=el.querySelector("#lat");const latYaz=()=>{latSec.value=latin?"1":"0";M.querySelectorAll(".lat").forEach(x=>x.classList.toggle("hide",!latin));M.querySelectorAll(".ayetler").forEach(x=>x.classList.toggle("latinli",latin));ls.set("no.lat",latin?"1":"0")};
+    latYaz();latSec.onchange=()=>{latin=latSec.value==="1";latYaz()};
+    // üst bilgi: sure (sayfa/toplam) · sayfa · cüz (sayfa/toplam)
+    const uS=el.querySelector("#uSure"),uP=el.querySelector("#uSayfa");let ustT=0;
+    const ustYaz=()=>{const g=ustAyet()||liste[0].g,it=liste.find(x=>x.g===g)||liste[0];const sf=M.querySelectorAll(".sf");let p=null;const tp=M.getBoundingClientRect().top+90;
+      for(const x of sf){if(x.getBoundingClientRect().top<=tp)p=+x.id.slice(2);else break}if(!p&&sf[0])p=+sf[0].id.slice(2);
+      const sm=sureSayfalari(it.s);uS.textContent=`${it.s}. ${SURELER[it.s-1][0]} Sûresi`+(sm&&p?` (${p-sm[0]+1}/${sm[1]-sm[0]+1})`:"");
+      if(p){const cb=k===1?1:2+(k-1)*20,ct=k===1?21:k===30?23:20;uP.textContent=`Sayfa ${p} • ${k}. Cüz (${p-cb+1}/${ct})`}};
+    M.addEventListener("scroll",()=>{if(ustT)return;ustT=requestAnimationFrame(()=>{ustT=0;ustYaz()})},{passive:true});
+    ustYaz();sayfaMeta().then(()=>{if(el.isConnected)ustYaz()});
   }catch(e){M.innerHTML=`<p class="sol" style="text-align:center;margin-top:40px">Arapça metin yüklenemedi; internet bağlantısını kontrol edin.<br><br><a href="https://kuran.diyanet.gov.tr/mushaf" target="_blank" rel="noopener">Diyanet Kur'an Portalı'nda aç</a></p>`}
 }
 

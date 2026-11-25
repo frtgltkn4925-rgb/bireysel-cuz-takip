@@ -242,3 +242,36 @@ pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding
 .pusula.tamam .dis{fill:rgba(60,200,120,.22);stroke:#5be39a}
 .kb-derece{text-align:center}.kb-derece b{display:block;font:700 34px var(--serif)}.kb-derece span{font-size:14px;opacity:.9}
 @media (max-width:370px){.hizli button{font-size:10.5px}.gz small{font-size:9.5px}nav.tabs button{min-width:0;padding:4px 2px}}
+
+/* Hadis ansiklopedisi */
+.pill{display:inline-block;background:var(--soft);color:var(--h1);border-radius:99px;padding:4px 10px;font-size:12.5px;font-weight:600;margin:0 6px 6px 0}
+.he-ar{font-size:24px;line-height:2;margin-bottom:6px}
+.he-ref{font-family:'Amiri',serif;color:var(--muted);font-size:15px;margin-bottom:12px}
+.he-tr{font-family:var(--serif);font-size:17px;line-height:1.65;margin-bottom:10px}
+.he-aciklama{line-height:1.7;font-size:15.5px}
+.he-ders{margin:0;padding-left:20px;line-height:1.6}.he-ders li{margin-bottom:8px}
+.he-bas{font-weight:600;line-height:1.4}
+.he-kaynak{margin-top:16px}
+/* Okuma sayfası: sade beyaz görünüm */
+.oku.yeni{background:#fff}
+.oku.yeni .oust{background:#f5f5f3;color:#1c1c1c;border-bottom:1px solid #e7e5e0;gap:6px}
+.oku.yeni .ik{background:transparent;color:#1c1c1c;font-size:24px;min-width:44px}
+.ubas{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.ubas b{font:700 18px 'Manrope',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ubas span{font:600 13.5px 'Manrope',sans-serif;color:#5d5d5d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hap{flex:none;appearance:none;-webkit-appearance:none;border:1px solid #dcdad5;background:#ebeae6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23333' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center;border-radius:99px;padding:9px 32px 9px 14px;font:700 14px 'Manrope',sans-serif;color:#222}
+.oku.yeni .metin{background:#fff;padding-left:16px;padding-right:16px}
+.oku.yeni .sf{margin:0 auto 6px}
+.oku.yeni .sfb{display:none}
+.oku.yeni .cerceve{background:none;border:0;box-shadow:none;padding:6px 0}
+.oku.yeni .sfn{font:600 12.5px 'Manrope',sans-serif;color:#9a9a9a;border-top:1px solid #eeece8;padding-top:6px;margin:6px 0 14px}
+.oku.yeni .ayetler{color:#161616;line-height:2.45;word-spacing:3px}
+.oku.yeni .al,.oku.yeni .vk{color:#a2155a}
+.oku.yeni .no{background:#0f5b47;color:#fff;box-shadow:0 0 0 .07em #fff,0 0 0 .13em #0f5b47;width:1.3em;height:1.3em;font-size:.47em;font-weight:700}
+.oku.yeni .sb{background:#f2f8f5;border:1px solid #cfe2da;border-radius:14px;color:#0f5b47}
+.oku.yeni .bsm{color:#161616}
+.oku.yeni .ay.su{background:#e3f1ec}
+.oku.yeni .lat{color:#56606a}
+.oku.yeni .goster{background:rgba(15,91,71,.88)}
+.he-kart .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.he-kart .acts button{background:var(--soft);border:0;color:var(--h1);border-radius:99px;padding:8px 14px;font:600 13.5px 'Manrope',sans-serif;cursor:pointer}
