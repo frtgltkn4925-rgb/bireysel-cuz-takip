@@ -1,5 +1,5 @@
 // Bireysel Cüz Takip — internetsiz çalışma
-const SURUM = "no-v10";
+const SURUM = "no-v11";
 const KABUK = ["./", "./index.html", "./stil.css", "./veri.js", "./veri-ek.js", "./uygulama.js", "./okuyucu.js", "./ekler.js", "./grup.js", "./hadisler.js", "./acilis.js", "./sesli.js", "./kible.js", "./ayar.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./gizlilik.html"];
 const KALICI = ["api.alquran.cloud", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 const GUNCEL = ["api.aladhan.com", "api.open-meteo.com", "hadeethenc.com"];
@@ -15,4 +15,13 @@ self.addEventListener("fetch", e => {
   if (KALICI.includes(u.hostname)) {
     e.respondWith(caches.open("no-veri").then(c => c.match(r).then(m => m || fetch(r).then(res => { if (res.ok || res.type === "opaque") c.put(r, res.clone()); return res; }))));
   }
+});
+
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const hedef = new URL((e.notification.data && e.notification.data.url) || "./", self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(l => {
+    for (const c of l) { if (c.url.startsWith(self.registration.scope)) { c.navigate(hedef).catch(() => {}); return c.focus(); } }
+    return self.clients.openWindow(hedef);
+  }));
 });

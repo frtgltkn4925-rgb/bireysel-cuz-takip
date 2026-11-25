@@ -130,6 +130,7 @@ async function vVakit(el){
     <div class="nx">${v?`${VAKIT_AD[v.i][1]} vaktine`:""}</div><div class="sayac" id="sayac">–</div>
     ${bug?vakitSatiri(bug,v&&v.t.getDate()===now.getDate()?v.i:-1):""}</section>
    ${ezanKart()}
+   ${vbKart()}
    <div class="row wrap" style="gap:8px;margin-bottom:12px"><button class="btn ghost sm" id="il">${ic("pin",14)} Şehri değiştir</button><button class="btn ghost sm" data-go="hava">${ic("sun",14)} Hava durumu</button><button class="btn ghost sm" data-go="kible">${ic("kible",14)} Kıble</button></div>
    <h2 class="sec">${esc(ayAd)} <small>imsakiye</small></h2>
    <div class="card" style="padding:0;overflow:auto"><table class="tablo"><thead><tr><th>Gün</th>${VAKIT_AD.map(([,n])=>`<th>${n}</th>`).join("")}</tr></thead>
@@ -138,6 +139,7 @@ async function vVakit(el){
   sayacBaslat(el,v);
   el.querySelector("#il").onclick=()=>ilSec();
   el.querySelector("#ezan").onclick=()=>vakitIcsSheet();
+  el.querySelector("#vbd").onclick=vbAcKapa;
 }
 const EZAN_AD=["Sabah ezanı (imsak)","Güneş doğuşu","Öğle ezanı","İkindi ezanı","Akşam ezanı","Yatsı ezanı"];
 function ezanKart(){const e=S.ezan,kalan=e?Math.ceil((e.bitis-Date.now())/864e5):0;
@@ -338,3 +340,23 @@ $("#ayar").onclick=()=>go("ayarlar");
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(e=>console.warn("SW",e));
 cur=parse();render();
 if(!S.il&&!ls.get("no.ilsoruldu")&&cur.v==="home"){ls.set("no.ilsoruldu","1");setTimeout(()=>ilSec(),400)}
+
+/* ============ BİLDİRİM PANOSUNDA VAKİTLER ============ */
+function vbKart(){const ac=S.vakitBildirim&&typeof Notification!=="undefined"&&Notification.permission==="granted";
+  return `<div class="card ezan-kart ${ac?"acik":""}"><div class="row between" style="gap:10px"><div><b>${ic("phone",16)} Bildirim panosunda vakitler</b><div class="muted small" style="margin-top:4px">${ac?"Açık. Uygulamayı her açtığınızda güncellenir.":"Ekranı aşağı çektiğinizde bugünün vakitleri görünsün."}</div></div>
+   <button class="btn sm ${ac?"ghost":"acc"}" id="vbd" style="white-space:nowrap;flex:none">${ac?"Kapat":"Aç"}</button></div></div>`}
+async function vbAcKapa(){
+  if(typeof Notification==="undefined"||!("serviceWorker" in navigator)){toast("Bu telefon bildirim göstermeyi desteklemiyor");return}
+  if(S.vakitBildirim&&Notification.permission==="granted"){S.vakitBildirim=false;save();try{const r=await navigator.serviceWorker.ready;(await r.getNotifications({tag:"bct-vakit"})).forEach(n=>n.close())}catch(e){}render();return}
+  if(!S.il){ilSec();return}
+  let izin=Notification.permission;if(izin!=="granted")try{izin=await Notification.requestPermission()}catch(e){}
+  if(izin!=="granted"){sheet(`<h3>Bildirim izni gerekiyor</h3><p class="small">Telefonun <b>Ayarlar → Uygulamalar → Bireysel Cüz Takip → Bildirimler</b> bölümünden bildirimlere izin verin, sonra bu düğmeye tekrar basın.</p><button class="btn full" id="tm">Tamam</button>`,(sh,c)=>{sh.querySelector("#tm").onclick=c});return}
+  S.vakitBildirim=true;save();await vakitBildirimGuncelle();toast("Vakitler bildirim panosuna eklendi");render()}
+async function vakitBildirimGuncelle(){
+  if(!S.vakitBildirim||!S.il||typeof Notification==="undefined"||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
+  try{const now=new Date(),bug=await vakitGun(now);if(!bug)return;const v=await sonrakiVakit();
+    const sat=`${VAKIT_AD[v?v.i:0][1]} ${v?`${ikiH(v.t.getHours())}:${ikiH(v.t.getMinutes())}`:""}`,baslik=`🕌 ${S.il.ad} · Sıradaki: ${sat}`,govde=VAKIT_AD.map(([,n],i)=>`${n} ${bug[i+1]}`).join("  ·  ");
+    const r=await navigator.serviceWorker.ready;const var_=(await r.getNotifications({tag:"bct-vakit"}))[0];if(var_&&var_.title===baslik&&var_.body===govde)return;
+    await r.showNotification(baslik,{body:govde,tag:"bct-vakit",renotify:false,silent:true,requireInteraction:true,icon:"icon-192.png",badge:"icon-192.png",data:{url:"./#vakit"}})}catch(e){console.warn("vakit bildirimi",e)}}
+setTimeout(vakitBildirimGuncelle,2500);setInterval(vakitBildirimGuncelle,60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)vakitBildirimGuncelle()});
