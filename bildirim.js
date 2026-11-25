@@ -80,8 +80,8 @@ async function ozetGuncelle(zorla){
     (await r.getNotifications({tag:"bct-ders"})).forEach(n=>n.close());
     const o=await ozetVeri(),eski=(await r.getNotifications({tag:OZ_TAG}))[0];
     if(!o){if(eski)eski.close();return}
-    const t=ozMetin(o);if(!zorla&&eski&&eski.title===t.baslik&&eski.body===t.govde)return;
-    await r.showNotification(t.baslik,{body:t.govde,icon:ozIkon(o),image:ozResim(o),tag:OZ_TAG,renotify:false,silent:true,requireInteraction:true,badge:"rozet.png",data:{url:o.ders&&dpBugun()>=0?"./#ogretmen":"./#vakit"}})}
+    const t=ozMetin(o),imza=t.baslik+"|"+t.govde;if(!zorla&&eski&&eski.data&&eski.data.imza===imza)return;
+    const im=ozResim(o);await r.showNotification(t.baslik,{body:im?"":t.govde,icon:ozIkon(o),image:im,tag:OZ_TAG,renotify:false,silent:true,requireInteraction:true,badge:"rozet.png",data:{imza,url:o.ders&&dpBugun()>=0?"./#ogretmen":"./#vakit"}})}
   catch(e){console.warn("özet bildirim",e)}}
 async function vakitBildirimGuncelle(){return ozetGuncelle(false)}
 async function dersBildirimGuncelle(z){return ozetGuncelle(!!z)}
