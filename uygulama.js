@@ -66,7 +66,7 @@ function confirmSheet(title,body,okText,fn){sheet(`<h3>${esc(title)}</h3><p clas
 
 /* ============ KAYIT ============ */
 const LK="nurokuma.v1";
-const DEF={acilis:true,sesliKomut:true,sesliCevap:true,gruplar:[],aktifGrup:null,adim:"",t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
+const DEF={wpVakit:true,acilis:true,sesliKomut:true,sesliCevap:true,gruplar:[],aktifGrup:null,adim:"",t:0,cuz:{},hatim:0,hatimLog:[],lib:[],cevsen:{},son:null,afs:30,tesbih:{},tema:"zumrut",meal:true,okunus:false,fav:[],plan:null,tesbihToplam:{},il:null,okuSaat:"21:00",okunanSayfa:0,zikir:{},cevsenB:{}};
 let S=structuredClone(DEF);
 try{const l=JSON.parse(localStorage.getItem(LK)||"null");if(l)S=Object.assign(structuredClone(DEF),l)}catch(e){}
 const IDB={db:null,open(){return this.db?Promise.resolve(this.db):new Promise((res,rej)=>{const r=indexedDB.open("nurpdf",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>{this.db=r.result;res(r.result)};r.onerror=()=>rej(r.error)})},
@@ -413,7 +413,7 @@ async function drawWallpaper(cv,c,tema,stil,vk){
   else y+=0;
   x.fillStyle=P.soft;x.font=`italic ${mS}px Literata`;y+=mS*.2;for(const l of f.ml){x.fillText(l,cx,y);y+=mS*1.5}
   x.fillStyle=P.gold;x.font="600 32px Manrope";x.fillText(c.k||"",cx,y+30);x.shadowColor="transparent";x.shadowBlur=0;x.shadowOffsetY=0;
-  if(vk)vakitSeridi(x,W,stil==="cami"?740:800,vk,P);
+  if(vk)vakitSeridi(x,W,stil==="cami"?740:2215,vk,P);
 }
 function vakitSeridi(x,W,y,vk,P){const pad=64,w=W-pad*2,h=176;x.save();
   x.fillStyle=P.light?"rgba(255,255,255,.6)":"rgba(0,0,0,.32)";rr(x,pad,y,w,h,36);x.fill();x.strokeStyle=P.gold;x.globalAlpha=.55;x.lineWidth=2;rr(x,pad+8,y+8,w-16,h-16,30);x.stroke();x.globalAlpha=1;
@@ -446,7 +446,7 @@ async function zipAll(btn){
     indir(blob,`nur-ekran-${wp.tema}-${wp.stil}.zip`);toast("İndirildi; şimdi kurulum adımlarını izle");sheet(kurulumHTML())}
   catch(e){console.warn(e);if(!(e&&e.code==="declined"))toast("Paket hazırlanamadı")}
   btn.disabled=false;btn.innerHTML=old}
-function vDuvar(el){
+function vDuvar(el){if(wp.vakit===undefined)wp.vakit=S.wpVakit!==false;
   wp.tema=wp.tema||"gecealtin";
   const today=GUNLUK[dayIdx()%GUNLUK.length],hd=HADISLER[dayIdx()%HADISLER.length];
   const pick=k=>k==="ayet"?{a:today.a,m:today.m,k:today.k}:k==="hadis"?{a:hd.a,m:hd.m,k:hd.s.split(";")[0]}:null;
@@ -454,7 +454,7 @@ function vDuvar(el){
   el.innerHTML=`<div class="seg" id="ks"><button data-k="ayet" class="${wp.kaynak==="ayet"?"on":""}">Günün ayeti</button><button data-k="hadis" class="${wp.kaynak==="hadis"?"on":""}">Günün hadisi</button><button data-k="kendi" class="${wp.kaynak==="kendi"?"on":""}">Kendi sözüm</button></div>
   <div id="kendi" class="${wp.kaynak==="kendi"?"":"hide"}" style="margin-bottom:10px"><textarea class="in" id="ks1" rows="3" placeholder="Söz veya dua">${esc(wp.kaynak==="kendi"?wp.src.m:"")}</textarea><input class="in" id="ks2" placeholder="Kaynak (isteğe bağlı)" style="margin-top:6px" value="${esc(wp.kaynak==="kendi"?wp.src.k:"")}"></div>
   <div class="wpwrap"><canvas id="cv" aria-label="Kilit ekranı önizleme"></canvas></div>
-  <label class="card row between" style="margin:14px 0 0;cursor:pointer"><span>${ic("clock",18)} Bugünün namaz vakitlerini ekle</span><input type="checkbox" id="wv" ${wp.vakit?"checked":""}></label>
+  <label class="card row between" style="margin:14px 0 0;cursor:pointer"><span>${ic("clock",18)} Bugünün namaz vakitlerini ekle${S.il?"":" <small class=\"muted\">(önce şehir seçin)</small>"}</span><input type="checkbox" id="wv" ${wp.vakit?"checked":""}></label>
   <button class="btn full acc" id="paylas" style="margin-top:14px">${ic("phone",18)} Duvar kâğıdı yap</button>
   <button class="btn full" id="add" style="margin-top:8px">${ic("dl",18)} Galeriye kaydet</button>
   <button class="btn full" id="zip" style="margin-top:8px">${ic("dl",18)} Her gün değişsin: tümünü indir (ZIP)</button>
@@ -464,8 +464,10 @@ function vDuvar(el){
   <div class="themes" id="tm">${WP_TEMALAR.map(([k,n])=>{const P=wpPalette(k);return `<button class="th ${k===wp.tema?"on":""}" data-t="${k}"><i style="background:linear-gradient(170deg,${P.a},${P.b} 70%,${P.c})"></i>${n}</button>`}).join("")}</div>
   ${S.fav.length?`<button class="btn full ghost" id="fv" style="margin-top:12px">Kaydettiklerimden seç</button>`:""}
   <button class="btn full line" id="how" style="margin-top:8px">Otomatik değişim nasıl kurulur?</button>`;
-  const cv=el.querySelector("#cv"),redraw=async()=>drawWallpaper(cv,wp.src,wp.tema,wp.stil,wp.vakit?await wpVakit():null);redraw();
-  el.querySelector("#wv").onchange=e=>{wp.vakit=e.target.checked;if(wp.vakit&&!S.il){ilSec();toast("Vakitler için önce şehrinizi seçin")}redraw()};
+  const cv=el.querySelector("#cv");let cizNo=0;
+  const redraw=async()=>{const no=++cizNo;let vk=null;if(wp.vakit&&S.il){vk=await wpVakit();if(!vk)toast("Namaz vakitleri alınamadı; internet bağlantısını kontrol edin")}
+    if(no!==cizNo)return;const tmp=document.createElement("canvas");await drawWallpaper(tmp,wp.src,wp.tema,wp.stil,vk);if(no!==cizNo)return;cv.width=tmp.width;cv.height=tmp.height;cv.getContext("2d").drawImage(tmp,0,0)};redraw();
+  el.querySelector("#wv").onchange=e=>{wp.vakit=e.target.checked;S.wpVakit=wp.vakit;save();if(wp.vakit&&!S.il){ilSec();toast("Vakitler için önce şehrinizi seçin")}redraw()};
   el.querySelector("#ks").onclick=e=>{const b=e.target.closest("[data-k]");if(!b)return;wp.kaynak=b.dataset.k;wp.src=wp.kaynak==="kendi"?{a:"",m:"Rabbim! İlmimi artır.",k:"Tâhâ 20:114"}:pick(wp.kaynak);vDuvar(el)};
   const upd=()=>{wp.src={a:"",m:el.querySelector("#ks1").value.trim()||" ",k:el.querySelector("#ks2").value.trim()};clearTimeout(upd.t);upd.t=setTimeout(redraw,250)};
   el.querySelector("#ks1").oninput=upd;el.querySelector("#ks2").oninput=upd;
