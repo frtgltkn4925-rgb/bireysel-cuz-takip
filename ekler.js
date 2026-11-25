@@ -352,11 +352,23 @@ async function vbAcKapa(){
   let izin=Notification.permission;if(izin!=="granted")try{izin=await Notification.requestPermission()}catch(e){}
   if(izin!=="granted"){sheet(`<h3>Bildirim izni gerekiyor</h3><p class="small">Telefonun <b>Ayarlar → Uygulamalar → Bireysel Cüz Takip → Bildirimler</b> bölümünden bildirimlere izin verin, sonra bu düğmeye tekrar basın.</p><button class="btn full" id="tm">Tamam</button>`,(sh,c)=>{sh.querySelector("#tm").onclick=c});return}
   S.vakitBildirim=true;save();await vakitBildirimGuncelle();toast("Vakitler bildirim panosuna eklendi");render()}
+function vbResim(bug,aktif){try{const W=720,H=330,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,"#0b3d31");g.addColorStop(1,"#17644f");x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.save();x.globalAlpha=.07;for(let yy=-40;yy<H+60;yy+=80)for(let xx=-40;xx<W+60;xx+=80)star8(x,xx+((yy/80|0)%2)*40,yy,22,null,"#f3d27a",1.5);x.restore();
+  x.textAlign="left";x.fillStyle="#f3d27a";x.font="600 26px Manrope,sans-serif";x.fillText(`${S.il.ad} · ${new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",weekday:"long"})}`,34,52);
+  x.textAlign="right";x.fillStyle="rgba(255,255,255,.7)";x.font="500 22px Manrope,sans-serif";x.fillText(hicriYaz(new Date()),W-34,52);
+  const cw=(W-48)/3,ch=118;VAKIT_AD.forEach(([,n],i)=>{const cx=24+(i%3)*cw,cy=78+Math.floor(i/3)*(ch+8),on=i===aktif;
+    x.fillStyle=on?"#f5a623":"rgba(255,255,255,.09)";rr(x,cx+6,cy,cw-12,ch,18);x.fill();if(on){x.strokeStyle="#fff3d6";x.lineWidth=3;rr(x,cx+6,cy,cw-12,ch,18);x.stroke()}
+    x.textAlign="center";x.fillStyle=on?"#0b3d31":"rgba(255,255,255,.78)";x.font="600 24px Manrope,sans-serif";x.fillText(n,cx+cw/2,cy+42);
+    x.fillStyle=on?"#0b3d31":"#ffffff";x.font="700 44px Manrope,sans-serif";x.fillText(bug[i+1],cx+cw/2,cy+94)});
+  return c.toDataURL("image/png")}catch(e){return undefined}}
 async function vakitBildirimGuncelle(){
   if(!S.vakitBildirim||!S.il||typeof Notification==="undefined"||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
-  try{const now=new Date(),bug=await vakitGun(now);if(!bug)return;const v=await sonrakiVakit();
-    const sat=`${VAKIT_AD[v?v.i:0][1]} ${v?`${ikiH(v.t.getHours())}:${ikiH(v.t.getMinutes())}`:""}`,baslik=`🕌 ${S.il.ad} · Sıradaki: ${sat}`,govde=VAKIT_AD.map(([,n],i)=>`${n} ${bug[i+1]}`).join("  ·  ");
-    const r=await navigator.serviceWorker.ready;const var_=(await r.getNotifications({tag:"bct-vakit"}))[0];if(var_&&var_.title===baslik&&var_.body===govde)return;
-    await r.showNotification(baslik,{body:govde,tag:"bct-vakit",renotify:false,silent:true,requireInteraction:true,icon:"icon-192.png",badge:"icon-192.png",data:{url:"./#vakit"}})}catch(e){console.warn("vakit bildirimi",e)}}
+  try{const now=new Date(),bug=await vakitGun(now);if(!bug)return;
+    let aktif=-1;for(let i=0;i<6;i++)if(saatDate(now,bug[i+1])<=now)aktif=i;if(aktif<0)aktif=5;
+    const baslik=`${S.il.ad} · ${VAKIT_AD[aktif][1]} vakti`,govde="";
+    const r=await navigator.serviceWorker.ready;const var_=(await r.getNotifications({tag:"bct-vakit"}))[0];
+    if(var_&&var_.title===baslik&&var_.data&&var_.data.gun===bugunISO())return;
+    await r.showNotification(baslik,{body:govde,image:vbResim(bug,aktif),tag:"bct-vakit",renotify:false,silent:true,requireInteraction:true,icon:"icon-192.png",badge:"rozet.png",data:{url:"./#vakit",gun:bugunISO()}})}catch(e){console.warn("vakit bildirimi",e)}}
 setTimeout(vakitBildirimGuncelle,2500);setInterval(vakitBildirimGuncelle,60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)vakitBildirimGuncelle()});
