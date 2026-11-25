@@ -319,3 +319,12 @@ pre.davet{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding
 .dp-kirp-alan polygon{fill:rgba(245,166,35,.15);stroke:#f5a623;stroke-width:2}
 .dp-kirp-alan i{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:rgba(245,166,35,.35);border:3px solid #f5a623;touch-action:none}
 .dp-kirp-alt{display:flex;gap:10px;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}.dp-kirp-alt .btn{flex:1}
+/* Kur'an'da konu ara */
+.kn-ara{display:flex;gap:8px;margin:12px 0 10px}.kn-ara .in{flex:1;margin:0}
+.kn-ozet{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 2px 10px;flex-wrap:wrap}
+.kn-ozet b{display:block;font:700 18px var(--serif)}.kn-ozet span{font-size:13px;color:var(--muted)}
+.kn-sira{margin:0;flex:none}.kn-sira button{padding:6px 12px;font-size:13px}
+.kn-ayet{padding:14px 16px}.kn-ayet p{margin:8px 0 10px;font-family:var(--serif);font-size:16.5px;line-height:1.65}
+.kn-ust{display:flex;justify-content:space-between;align-items:baseline}.kn-ust b{color:var(--h1);font-size:15px}.kn-ust span{font-size:12px;color:var(--muted)}
+.kn-ayet mark{background:#fbe7b5;color:inherit;border-radius:4px;padding:0 2px}
+.kn-acts{display:flex;gap:8px;flex-wrap:wrap}.kn-acts button{background:var(--soft);border:0;color:var(--h1);border-radius:99px;padding:7px 13px;font:600 13px 'Manrope',sans-serif;cursor:pointer}
