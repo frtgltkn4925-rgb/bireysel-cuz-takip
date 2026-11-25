@@ -1,11 +1,17 @@
 // Bireysel Cüz Takip — internetsiz çalışma
-const SURUM = "no-v23";
+const SURUM = "no-v24";
 const KABUK = ["./", "./index.html", "./stil.css", "./veri.js", "./veri-ek.js", "./uygulama.js", "./okuyucu.js", "./ekler.js", "./grup.js", "./hadisler.js", "./ogretmen.js", "./konu.js", "./bildirim.js", "./cevrimdisi.js", "./acilis.js", "./sesli.js", "./kible.js", "./ayar.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./rozet.png", "./gizlilik.html"];
 const KALICI = ["api.alquran.cloud", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 const GUNCEL = ["api.aladhan.com", "api.open-meteo.com", "hadeethenc.com"];
 const ATLA = ["script.google.com", "script.googleusercontent.com"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(SURUM).then(c => c.addAll(KABUK)).then(() => self.skipWaiting())); });
-self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== SURUM && k !== "no-veri").map(k => caches.delete(k)))).then(() => self.clients.claim())); });
+self.addEventListener("activate", e => {
+  let eskiVardi = false;
+  e.waitUntil(caches.keys().then(ks => { const eski = ks.filter(k => k !== SURUM && k !== "no-veri"); eskiVardi = eski.length > 0; return Promise.all(eski.map(k => caches.delete(k))); }).then(() => self.clients.claim()));
+  // Eski sürümle açık kalan pencereleri (arka plandaki uygulama, Chrome sekmesi) etkinleşme bittikten sonra yenile;
+  // yoksa eski kod eski bildirimi yeniden çizer. Beklenmez: etkinleşme bitmeden sayfa yüklenemez.
+  setTimeout(() => { if (!eskiVardi) return; self.clients.matchAll({ type: "window" }).then(l => l.forEach(c => { if (c.url.startsWith(self.registration.scope)) c.navigate(c.url).catch(() => {}); })); }, 1500);
+});
 self.addEventListener("fetch", e => {
   const r = e.request; if (r.method !== "GET") return;
   const u = new URL(r.url);

@@ -78,9 +78,10 @@ async function ozetGuncelle(zorla){
   if(typeof Notification==="undefined"||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
   try{const r=await navigator.serviceWorker.ready;
     (await r.getNotifications({tag:"bct-ders"})).forEach(n=>n.close());
+    (await r.getNotifications()).forEach(n=>{if(n.tag===OZ_TAG&&!(n.data&&n.data.imza))n.close()}); // eski sürümün bıraktığı bildirim
     const o=await ozetVeri(),eski=(await r.getNotifications({tag:OZ_TAG}))[0];
     if(!o){if(eski)eski.close();return}
-    const t=ozMetin(o),imza=t.baslik+"|"+t.govde;if(!zorla&&eski&&eski.data&&eski.data.imza===imza)return;
+    const t=ozMetin(o),imza="v2|"+t.baslik+"|"+t.govde;if(!zorla&&eski&&eski.data&&eski.data.imza===imza)return;
     const im=ozResim(o);await r.showNotification(t.baslik,{body:im?"":t.govde,icon:ozIkon(o),image:im,tag:OZ_TAG,renotify:false,silent:true,requireInteraction:true,badge:"rozet.png",data:{imza,url:o.ders&&dpBugun()>=0?"./#ogretmen":"./#vakit"}})}
   catch(e){console.warn("özet bildirim",e)}}
 async function vakitBildirimGuncelle(){return ozetGuncelle(false)}
