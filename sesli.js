@@ -170,7 +170,17 @@ let skDinliyor=false,skTanima=null;
 function skBasla(){const b=document.getElementById("skMik");
   if(!SK_SR){skSoyle("Bu telefonda sesli komut desteklenmiyor. Google uygulamasının güncel olduğundan emin olun.");toast("Sesli komut bu telefonda desteklenmiyor");return}
   if(skDinliyor){try{skTanima.stop()}catch(e){}return}
+  if(skTanitIptal){skTanitIptal();skTanitIptal=null}
   try{speechSynthesis.cancel()}catch(e){}
+  if(!skTanitildi){skTanitildi=true;skTanit(()=>skDinle(b));return}
+  skDinle(b)}
+const SK_TANIT="Sesli asistan hazır. Uygulamadaki her bölümü sesinizle açabilirsiniz: Kur'an okuma, kaldığınız cüz, sure arama, konu arama, namaz vakitleri ve kalan süre, hava durumu, kıble, hadisler, zikirmatik ve ders programınız. Örneğin, Yasin suresini aç, ezana kaç dakika var ya da bugün derslerim ne diyebilirsiniz. Komutların tamamı için yardım deyin. Sinyal sesinden sonra konuşun.";
+let skTanitildi=false,skTanitIptal=null;try{skTanitildi=sessionStorage.getItem("skTanit")==="1"}catch(e){}
+function skTanit(sonra){try{sessionStorage.setItem("skTanit","1")}catch(e){}
+  const c=document.getElementById("skCanli");if(c)c.textContent=SK_TANIT;skBalon("",SK_TANIT);
+  let bitti=false;skTanitIptal=()=>{bitti=true};const devam=()=>{if(bitti)return;bitti=true;skTanitIptal=null;setTimeout(sonra,250)};
+  try{const ss=window.speechSynthesis;if(!ss)return devam();const u=new SpeechSynthesisUtterance(SK_TANIT);u.lang="tr-TR";u.rate=1;const v=ss.getVoices().find(x=>/^tr/i.test(x.lang));if(v)u.voice=v;u.onend=devam;u.onerror=devam;ss.speak(u);setTimeout(devam,30000)}catch(e){devam()}}
+function skDinle(b){
   try{const au=window.OKU_AU||(window.OKU_AU=new Audio());if(!au.src||au.paused){au.src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";au.play().then(()=>au.pause(),()=>{})}}catch(e){}
   skTanima=new SK_SR();skTanima.lang="tr-TR";skTanima.interimResults=false;skTanima.maxAlternatives=5;
   skTanima.onstart=()=>{skDinliyor=true;try{navigator.vibrate&&navigator.vibrate(40)}catch(e){}skBalon("","Dinliyorum…");b&&b.classList.add("on");b&&b.setAttribute("aria-label","Dinliyorum. Durdurmak için dokunun")};
@@ -185,11 +195,11 @@ function skGoster(){const b=document.getElementById("skMik");if(b)b.classList.to
 skDugme();
 
 /* ----- Görme engelliler için açılış rehberi ----- */
-const SK_REHBER="Bireysel Cüz Takip açıldı. Sesli komut için mikrofon düğmesi ekranın sağ alt köşesinde, alt menünün hemen üstünde. Ona bir kez dokunun, titreşimi hissedince konuşun. Neler söyleyebileceğinizi öğrenmek için yardım, bulunduğunuz sayfayı dinlemek için bu sayfada ne var deyin.";
+const SK_REHBER="Sesli komut düğmesi ekranın sağ alt köşesinde, alt menünün hemen üstünde.";
 function skRehber(){if(S.sesliRehber===false||S.sesliKomut===false)return;
   const c=document.getElementById("skCanli");
   const soyle=()=>{if(document.querySelector(".acilis"))return false;if(c)c.textContent=SK_REHBER;try{const ss=window.speechSynthesis;if(!ss)return true;ss.cancel();const u=new SpeechSynthesisUtterance(SK_REHBER);u.lang="tr-TR";u.rate=.95;const v=ss.getVoices().find(x=>/^tr/i.test(x.lang));if(v)u.voice=v;let bas=false;u.onstart=()=>{bas=true};ss.speak(u);setTimeout(()=>{if(!bas)ilkDokunus()},1200)}catch(e){}return true};
-  const ilkDokunus=()=>{const f=()=>{document.removeEventListener("pointerdown",f,true);setTimeout(()=>{if(!skDinliyor)soyle()},400)};document.addEventListener("pointerdown",f,true)};
+  const ilkDokunus=()=>{const f=ev=>{document.removeEventListener("pointerdown",f,true);if(ev&&ev.target&&ev.target.closest&&ev.target.closest("#skMik"))return;setTimeout(()=>{if(!skDinliyor&&!skTanitIptal)soyle()},400)};document.addEventListener("pointerdown",f,true)};
   let n=0;const bekle=setInterval(()=>{if(soyle()||++n>40)clearInterval(bekle)},500)}
 setTimeout(skRehber,1200);
 // TalkBack kullananlar için sayfa değişince sayfa adını bildir

@@ -1,5 +1,5 @@
 // Bireysel Cüz Takip — internetsiz çalışma
-const SURUM = "no-v24";
+const SURUM = "no-v26";
 const KABUK = ["./", "./index.html", "./stil.css", "./veri.js", "./veri-ek.js", "./uygulama.js", "./okuyucu.js", "./ekler.js", "./grup.js", "./hadisler.js", "./ogretmen.js", "./konu.js", "./bildirim.js", "./cevrimdisi.js", "./acilis.js", "./sesli.js", "./kible.js", "./ayar.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./rozet.png", "./gizlilik.html"];
 const KALICI = ["api.alquran.cloud", "cdn.jsdelivr.net", "fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
 const GUNCEL = ["api.aladhan.com", "api.open-meteo.com", "hadeethenc.com"];
@@ -31,3 +31,19 @@ self.addEventListener("notificationclick", e => {
     return self.clients.openWindow(hedef);
   }));
 });
+
+// Günlük bildirim: uygulama açılmadan da yeni günün vakit ve derslerini göster (destekleyen telefonlarda)
+async function gunlukBildirim() {
+  try {
+    const c = await caches.open("no-veri"), m = await c.match(new URL("bct-hafta.json", self.registration.scope).href);
+    if (!m) return;
+    const v = await m.json(), d = new Date(), p = n => String(n).padStart(2, "0");
+    const t = v.gunler && v.gunler[`${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`];
+    if (!t) return;
+    const imza = "g1|" + `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` + "|" + t.govde;
+    const eski = (await self.registration.getNotifications({ tag: "bct-vakit" }))[0];
+    if (eski && eski.data && eski.data.imza === imza) return;
+    await self.registration.showNotification(t.baslik, { body: t.govde, icon: "icon-192.png", tag: "bct-vakit", renotify: false, silent: true, requireInteraction: true, badge: "rozet.png", data: { imza, url: v.url || "./" } });
+  } catch (e) {}
+}
+self.addEventListener("periodicsync", e => { if (e.tag === "bct-gun") e.waitUntil(gunlukBildirim()); });
