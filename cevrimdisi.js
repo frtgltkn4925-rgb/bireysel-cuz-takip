@@ -34,7 +34,11 @@ function cdBagla(el){const b=el.querySelector("#cdBtn");if(!b)return;
 /* İnternet durumu şeridi */
 function cdSerit(){let s=document.getElementById("cdSerit");if(!s){s=document.createElement("div");s.id="cdSerit";s.className="cd-serit";s.setAttribute("role","status");document.body.appendChild(s)}
   const yok=!navigator.onLine;s.textContent=yok?(S.cevrimdisi?"İnternet yok · indirilen içerikler kullanılıyor":"İnternet yok · yalnızca daha önce açılan sayfalar görünür"):"";s.classList.toggle("on",yok);document.body.classList.toggle("cevrimdisi",yok)}
-window.addEventListener("online",()=>{cdSerit();toast("İnternet bağlantısı geldi")});window.addEventListener("offline",cdSerit);setTimeout(cdSerit,500);
+// Açılışta ya da kısa ağ geçişlerinde şerit/uyarı yanıp sönmesin: bağlantı 3 sn kesik kalırsa göster, gerçekten kesilip geldiyse haber ver
+let cdKesikT=0,cdKesildi=false;
+function cdDurum(){clearTimeout(cdKesikT);if(navigator.onLine){const s=document.getElementById("cdSerit");if(s&&s.classList.contains("on"))cdSerit();if(cdKesildi){cdKesildi=false;toast("İnternet bağlantısı geldi")}return}
+  cdKesikT=setTimeout(()=>{if(!navigator.onLine){cdKesildi=true;cdSerit()}},3000)}
+window.addEventListener("online",cdDurum);window.addEventListener("offline",cdDurum);setTimeout(cdDurum,1500);
 /* İnternet varken bu ayın ve gelecek ayın vakitlerini sessizce hazırla (ay başında internet yoksa vakitler kaybolmasın) */
 setTimeout(async()=>{if(!navigator.onLine||!S.il)return;const g=new Date();for(let i=0;i<2;i++){const d=new Date(g.getFullYear(),g.getMonth()+i,1);try{await vakitAyi(d.getFullYear(),d.getMonth()+1)}catch(e){}}},6000);
 /* Uygulama doğrudan Ayarlar sayfasında açıldıysa ilk çizim bu dosya yüklenmeden yapılmıştır; bölümü şimdi tamamla */
