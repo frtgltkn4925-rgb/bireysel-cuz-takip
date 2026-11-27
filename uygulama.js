@@ -138,7 +138,7 @@ async function vSure(el){
   el.querySelector("#tf").onclick=async e=>{S.tefsir=!S.tefsir;save();e.target.classList.toggle("ghost",!S.tefsir);if(S.tefsir&&!v.some(x=>x.c)){e.target.disabled=true;try{await tefsirEkle(n,v)}catch(er){toast("Tefsir yüklenemedi; internet bağlantısını kontrol edin")}e.target.disabled=false}drawBody()};
   el.querySelector("#dn").onclick=()=>{const k=sureCuzu(n);okuyucu(k,{sure:n})};
   el.querySelector("#tl").onclick=e=>{if(!v.some(x=>x.o))return toast("Bu kaynakta okunuş yok");S.okunus=!S.okunus;save();e.target.classList.toggle("ghost",!S.okunus);drawBody()};
-  body.onclick=e=>{const b=e.target.closest("[data-act]");if(!b)return;const an=+b.closest(".ayah").dataset.n,x=v.find(z=>z.n===an),it={tip:"Ayet",kaynak:`${ad} ${n}:${an}`,metin:x.t,ar:x.a};
+  body.onclick=e=>{const b=e.target.closest("[data-act]");if(!b){const ay=e.target.closest(".ayah .a");if(ay){const an=+ay.closest(".ayah").dataset.n,x=v.find(z=>z.n===an);if(x)mealGoster({s:n,n:an,g:x.g,kelime:kelimeBul(ay,e)})}return}const an=+b.closest(".ayah").dataset.n,x=v.find(z=>z.n===an),it={tip:"Ayet",kaynak:`${ad} ${n}:${an}`,metin:x.t,ar:x.a};
     if(b.dataset.act==="mark"){S.son={s:n,a:an};save();body.querySelectorAll('[data-act="mark"]').forEach(q=>q.classList.remove("on"));b.classList.add("on");toast("Kaldığın yer kaydedildi")}
     if(b.dataset.act==="fav"){toggleFav(it);b.classList.toggle("on",isFav(it))}
 };

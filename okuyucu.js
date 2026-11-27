@@ -19,7 +19,7 @@ const MUSHAF_CSS=`
 .ayetler{direction:rtl;text-align:justify;text-align-last:justify;font-family:'Amiri Quran','Amiri','Scheherazade New','Noto Naskh Arabic','Geeza Pro',serif;font-size:var(--yb,30px);line-height:var(--sa,2.25);color:#111;word-spacing:1px}
 .ayetler.son{text-align-last:center}
 .ay{border-radius:8px;transition:background .25s}
-.ay.su{background:#f1dc9e}
+.ay.su{background:#f1dc9e}.ay.mealde{background:#e8dcb5;box-shadow:0 0 0 2px #d9c48a}
 .al{color:#c0262d}
 .vk{color:#c0262d;font-size:.8em}
 .no{display:inline-grid;place-items:center;width:1.25em;height:1.25em;border-radius:50%;background:#6b5a35;color:#f6e7bb;font-family:'Amiri',serif;font-size:.5em;line-height:1;vertical-align:middle;margin:0 .2em;box-shadow:0 0 0 .12em #fdf6e3,0 0 0 .2em #6b5a35}
@@ -101,7 +101,9 @@ async function okuyucu(k,opt={}){
   const sesDevam=()=>{if(!liste.length)return;kayDur();if(sira<0)cal(0);else{caliyor=true;dinleB.textContent="⏸";au.play().catch(()=>cal(sira))}};
   dinleB.onclick=()=>caliyor?sesDur():sesDevam();
   el.querySelector("#imam").onchange=async e=>{imam=e.target.value;ls.set("no.imam",imam);indirDurum();if(caliyor)cal(sira)};
-  M.onclick=e=>{if(el.classList.contains("gizli")){el.classList.remove("gizli");return}const sp=e.target.closest(".ay");if(!sp)return;const i=liste.findIndex(x=>x.g===+sp.dataset.g);if(i>=0){kayDur();cal(i)}};
+  M.onclick=e=>{if(el.classList.contains("gizli")){el.classList.remove("gizli");return}const sp=e.target.closest(".ay");if(!sp)return;const i=liste.findIndex(x=>x.g===+sp.dataset.g);if(i<0)return;const it=liste[i];
+    M.querySelectorAll(".ay.mealde").forEach(x=>x.classList.remove("mealde"));sp.classList.add("mealde");
+    mealGoster({s:it.s,n:it.n,g:it.g,kelime:kelimeBul(sp,e),dinle:()=>{kayDur();cal(i)},komsuAc:x=>x.click(),kapaninca:()=>sp.classList.remove("mealde")})};
 
   // indirme
   const indirB=el.querySelector("#indir");let indiriliyor=false;
@@ -175,3 +177,54 @@ async function okuyucu(k,opt={}){
   }catch(e){M.innerHTML=`<p class="sol" style="text-align:center;margin-top:40px">Arapça metin yüklenemedi; internet bağlantısını kontrol edin.<br><br><a href="https://kuran.diyanet.gov.tr/mushaf" target="_blank" rel="noopener">Diyanet Kur'an Portalı'nda aç</a></p>`}
 }
 
+
+/* ===== Dokunulan ayetin meali ===== */
+async function mealBul(s,n,g){mealBul.ar="";
+  try{const d=await loadSure(s),x=d.v.find(z=>z.n===n);if(x&&x.t){mealBul.ar=x.a;return x.t}}catch(e){}
+  try{if(KN_MEAL){const x=KN_MEAL.find(z=>z[0]===s&&z[1]===n);if(x)return x[2]}const c=await IDB.get("meal-tr-yazir");if(c){const x=c.find(z=>z[0]===s&&z[1]===n);if(x)return x[2]}}catch(e){}
+  const j=await zamanli(API+"ayah/"+(g||`${s}:${n}`)+"/tr.yazir",15000);return String(j.data.text||"").replace(/<[^>]+>/g,"")}
+function mealGoster(o){const ad=SURELER[o.s-1][0];
+  sheet(`<div class="meal-k"><div class="row between" style="align-items:center"><h3 style="margin:0">${esc(ad)} Sûresi, ${o.n}. ayet</h3><button class="ik" id="mk" aria-label="Kapat">✕</button></div>
+    ${o.kelime?`<div class="kel" id="kel"><div class="kel-e">Dokunduğunuz kelime</div><div class="kel-t" id="kt">Anlamı aranıyor…</div><div class="kel-a" dir="rtl" lang="ar">${esc(o.kelime.ar)}</div></div><div class="kel-e" style="margin-top:12px">Ayetin meali</div>`:""}
+    <div class="meal-t" id="mt" aria-live="polite"><div class="spin"></div></div>
+    <div class="muted small" style="margin-top:6px">Elmalılı Hamdi Yazır meali</div>
+    <div class="row wrap" style="gap:8px;margin-top:12px">${o.dinle?`<button class="btn" id="md">▶ Bu ayetten dinle</button>`:""}<button class="btn line" id="mp">Paylaş</button>
+      ${o.s>1||o.n>1?`<button class="btn ghost" id="mo" aria-label="Önceki ayet">‹ Önceki</button>`:""}<button class="btn ghost" id="ms" aria-label="Sonraki ayet">Sonraki ›</button></div></div>`,(sh,close)=>{
+    const bg=sh.parentNode,kapat=()=>{close();o.kapaninca&&o.kapaninca()};
+    bg.addEventListener("click",e=>{if(e.target===bg)o.kapaninca&&o.kapaninca()});
+    sh.querySelector("#mk").onclick=kapat;let metin="";
+    mealBul(o.s,o.n,o.g).then(t=>{metin=t;const m=sh.querySelector("#mt");if(m)m.textContent=t||"Meal bulunamadı."}).catch(()=>{const m=sh.querySelector("#mt");if(m)m.textContent="Meal açılamadı. İnternet bağlantısını kontrol edin ya da Ayarlar'dan İnternetsiz kullanım paketini indirin."});
+    if(o.kelime)kelimeAnlam(o.s,o.n,o.kelime.i).then(t=>{const k=sh.querySelector("#kt");if(k)k.textContent=t}).catch(()=>{const k=sh.querySelector("#kel");if(k)k.remove()});
+    const md=sh.querySelector("#md");md&&(md.onclick=()=>{kapat();o.dinle()});
+    sh.querySelector("#mp").onclick=async()=>{const t=`${ad} ${o.n}: ${metin}\n— Bireysel Cüz Takip`;try{if(navigator.share)await navigator.share({text:t});else{await navigator.clipboard.writeText(t);toast("Meal kopyalandı")}}catch(e){}};
+    const komsu=d=>{let s=o.s,n=o.n+d;if(n<1){s--;n=SURELER[s-1][1]}else if(n>SURELER[s-1][1]){s++;n=1}if(s<1||s>114)return;
+      const g=o.g?o.g+d:null,sp=g&&document.querySelector(`.oku [data-g="${g}"]`);close();
+      if(sp&&o.komsuAc)return o.komsuAc(sp);mealGoster({s,n,g,kapaninca:o.kapaninca})};
+    const mo=sh.querySelector("#mo");mo&&(mo.onclick=()=>komsu(-1));sh.querySelector("#ms").onclick=()=>komsu(1)});}
+document.head.insertAdjacentHTML("beforeend",`<style>.kel{background:linear-gradient(135deg,#0f766e,#134e4a);color:#fff;border-radius:14px;padding:12px 14px;margin-top:12px;position:relative}
+.kel-e{font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.75}.kel .kel-e{color:#ccfbf1}
+.kel-t{font-size:22px;font-weight:800;line-height:1.35;margin-top:2px;padding-right:70px}
+.kel-a{position:absolute;right:14px;top:10px;font-family:"Amiri Quran","Scheherazade New",serif;font-size:20px;opacity:.8}
+.meal-ar{font-family:"Amiri Quran","Scheherazade New",serif;font-size:26px;line-height:1.9;margin:12px 0 8px;text-align:right;color:var(--ink)}
+.meal-t{font-size:17px;line-height:1.65;color:var(--ink);background:var(--soft,#f3efe4);border-radius:12px;padding:12px 14px;min-height:48px}
+.ayah .a{cursor:pointer}</style>`);
+
+/* ===== Dokunulan kelime ve Türkçe anlamı (kelime kelime meal: quran.com) ===== */
+const AR_HARF=/[\u0621-\u064A\u066E-\u06D3\u06FA-\u06FF]/;
+function kelimeBul(sp,e){try{let kap,ofs;
+  if(document.caretRangeFromPoint){const r=document.caretRangeFromPoint(e.clientX,e.clientY);if(!r)return null;kap=r.startContainer;ofs=r.startOffset}
+  else if(document.caretPositionFromPoint){const p=document.caretPositionFromPoint(e.clientX,e.clientY);if(!p)return null;kap=p.offsetNode;ofs=p.offset}else return null;
+  if(!kap||kap.nodeType!==3||!sp.contains(kap)||kap.parentElement.closest(".no,.lat,.mk"))return null;
+  const tw=document.createTreeWalker(sp,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest(".no,.lat,.mk")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  let once="",tum="",n;while(n=tw.nextNode()){if(n===kap)once=tum+n.textContent.slice(0,ofs);tum+=n.textContent}
+  const kel=tum.split(/\s+/).filter(x=>AR_HARF.test(x)),onc=once.split(/\s+/),son=onc.pop()||"";
+  let i=onc.filter(x=>AR_HARF.test(x)).length;if(!AR_HARF.test(son)&&!AR_HARF.test(tum.slice(once.length).split(/\s+/)[0]||""))return null;
+  if(i>=kel.length)i=kel.length-1;return i>=0?{i,ar:kel[i]}:null}catch(err){return null}}
+const KEL_ON={};
+async function kelimeAnlam(s,n,i){const k=`${s}:${n}`;
+  let l=KEL_ON[k];if(!l){try{l=JSON.parse(ls.get("no.kel."+k)||"null")}catch(e){}}
+  if(!l){const j=await zamanli(`https://api.quran.com/api/v4/verses/by_key/${k}?words=true&word_translation_language=tr&word_fields=text_uthmani`,15000);
+    const w=(j.verse&&j.verse.words||[]).filter(x=>x.char_type_name==="word");
+    if(!w.length||!/turk/i.test(String(w[0].translation&&w[0].translation.language_name||"")))throw new Error("tr yok");
+    l=w.map(x=>String(x.translation&&x.translation.text||"").trim());try{ls.set("no.kel."+k,JSON.stringify(l))}catch(e){}}
+  KEL_ON[k]=l;const t=l[Math.min(i,l.length-1)];if(!t)throw new Error("yok");return t}
