@@ -16,7 +16,7 @@ const MUSHAF_CSS=`
 .sfb .sn{font-size:17px}
 .cerceve{background:#fdf6e3;border:5px solid #8b7a50;box-shadow:inset 0 0 0 3px #fdf6e3,inset 0 0 0 5px #8b7a50,inset 0 0 0 9px #fdf6e3,inset 0 0 0 10px #8b7a50,0 2px 10px rgba(80,60,20,.15);padding:18px 16px}
 .sfn{text-align:center;font-family:'Amiri',serif;color:#5b4b2a;font-size:14px;margin-top:6px}
-.ayetler{direction:rtl;text-align:justify;text-align-last:center;font-family:'Scheherazade Yerel','Scheherazade New','Amiri','Noto Naskh Arabic','Geeza Pro',serif;font-size:calc(var(--yb,30px)*1.1);line-height:var(--sa,2.25);color:#000;word-spacing:1px}
+.ayetler{direction:rtl;text-align:right;text-align-last:right;-webkit-text-stroke:.4px currentColor;font-family:'Scheherazade Yerel','Scheherazade New','Amiri','Noto Naskh Arabic','Geeza Pro',serif;font-size:calc(var(--yb,30px)*1.1);line-height:var(--sa,2.25);color:#000;word-spacing:1px}
 .ayetler.son{text-align-last:center}
 .ay{border-radius:8px;transition:background .25s}
 .ay.su{background:#f1dc9e}.ay.mealde{background:#e8dcb5;box-shadow:0 0 0 2px #d9c48a}

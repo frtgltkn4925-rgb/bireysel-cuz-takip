@@ -9,7 +9,7 @@ async function loadSure(n){
   try{const ed=e=>API+"surah/"+n+"/editions/"+e+",tr.yazir,tr.transliteration"; // Türk mushafına yakın sade yazım; olmazsa eski (önceden indirilmiş) Osmânî metin
     const j=await zamanli(ed(KURAN_YAZIM)).catch(()=>zamanli(ed("quran-uthmani")));
     const [ar,ml,tl]=j.data;
-    const v=ar.ayahs.map((a,i)=>{let t=a.text;if(i===0&&n!==1&&n!==9)t=t.replace(BESM2,"");return{n:a.numberInSurah,g:a.number,a:t,t:ml&&ml.ayahs[i]?ml.ayahs[i].text:"",o:tl&&tl.ayahs[i]?tl.ayahs[i].text:""}});
+    const v=ar.ayahs.map((a,i)=>{let t=a.text;if(i===0&&n!==1&&n!==9)t=t.replace(BESM2,"");t=vaslHareke(t);return{n:a.numberInSurah,g:a.number,a:t,t:ml&&ml.ayahs[i]?ml.ayahs[i].text:"",o:tl&&tl.ayahs[i]?tl.ayahs[i].text:""}});
     qCache[n]={v,src:"api"};return qCache[n]}
   catch(e){
     if(GOMULU[n])return qCache[n]={v:GOMULU[n].map((x,i)=>({n:i+1,a:x[0],t:x[1],o:""})),src:"yerel"};
@@ -18,13 +18,19 @@ async function loadSure(n){
 }
 // Türkçe tefsir: Diyanet Kur'an Yolu, Diyanet'in kendi sitesinde açılır (metin kopyalanmaz)
 const tefsirAdres=(s,n)=>`https://kuran.diyanet.gov.tr/kuran?sure=${s}&ayet=${n}&mode=tefsir`;
+// Ayet başındaki hemze-i vasla elifine Türk mushaflarındaki gibi hareke koy: "ال" → اَلْ, emir/mastar → اِ / اُ
+const HRK=/[\u064B-\u0652\u0670]/;
+function vaslHareke(t){return String(t||"").replace(/^(\s*)\u0627(?=[\u0621-\u064A])/,(m,b,o,str)=>{
+  const w=[...str.slice(b.length+1).split(/\s/)[0]];if(w[0]==="\u0644")return b+"\u0627\u064E";
+  let i=1;while(i<w.length&&HRK.test(w[i]))i++;let j=i+1,k="";while(j<w.length&&HRK.test(w[j])){k+=w[j];j++}
+  return b+(k.includes("\u064F")?"\u0627\u064F":"\u0627\u0650")})}
 async function tefsirEkle(n,v){const j=await zamanli(API+"surah/"+n+"/ar.jalalayn");j.data.ayahs.forEach((a,i)=>{if(v[i])v[i].c=a.text})}
 const mCache={};
 async function cuzMetni(k){
   if(mCache[k])return mCache[k];let out;
   try{const [ar,la]=await Promise.all([zamanli(API+"juz/"+k+"/"+KURAN_YAZIM).catch(()=>zamanli(API+"juz/"+k+"/quran-uthmani")),zamanli(API+"juz/"+k+"/tr.transliteration").catch(()=>null)]);
     const lat=la&&la.data&&la.data.ayahs||[];
-    out=ar.data.ayahs.map((a,i)=>{let tx=a.text;const s=a.surah.number,n=a.numberInSurah;if(n===1&&s!==1&&s!==9)tx=tx.replace(BESM2,"");return{s,n,g:a.number,p:a.page,j:a.juz,a:tx,l:lat[i]?String(lat[i].text).replace(/<[^>]+>/g,""):""}})}
+    out=ar.data.ayahs.map((a,i)=>{let tx=a.text;const s=a.surah.number,n=a.numberInSurah;if(n===1&&s!==1&&s!==9)tx=tx.replace(BESM2,"");tx=vaslHareke(tx);return{s,n,g:a.number,p:a.page,j:a.juz,a:tx,l:lat[i]?String(lat[i].text).replace(/<[^>]+>/g,""):""}})}
   catch(e){const r=aralik(k),ss=[];for(let s=r.s;s<=r.es;s++)ss.push(s);
     const tum=await Promise.all(ss.map(s=>zamanli("https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/chapters/"+s+".json")));out=[];
     tum.forEach((d,i)=>{const s=ss[i],v=d.verses,from=s===r.s?r.a:1,to=s===r.es?r.ea:v.length;v.forEach((x,j)=>{const n=x.id||j+1;if(n>=from&&n<=to)out.push({s,n,g:BAS[s-1]+n,a:x.text,l:""})})})}

@@ -143,7 +143,7 @@ async function vSure(el){
   if(cur.v!=="sure"||parseInt(cur.p)!==n)return;
   const body=el.querySelector("#body"),v=d.v;
   const drawBody=()=>{body.innerHTML=(n!==1&&n!==9?`<div class="besmele">${BESMELE}</div>`:"")+(d.src==="yerel"?`<p class="muted small">İnternetsiz metin gösteriliyor (sade meal).</p>`:"")+
-   v.map(x=>{const it={tip:"Ayet",kaynak:`${ad} ${n}:${x.n}`,metin:x.t,ar:x.a};return `<div class="ayah" id="a${x.n}" data-n="${x.n}"><div class="a">${esc(x.a)} <span class="mk">${x.n}</span></div>${x.o&&S.okunus?`<div class="tr">${esc(x.o)}</div>`:""}${S.meal&&x.t?`<div class="t">${esc(x.t)}</div>`:""}
+   v.map(x=>{const it={tip:"Ayet",kaynak:`${ad} ${n}:${x.n}`,metin:x.t,ar:x.a};return `<div class="ayah" id="a${x.n}" data-n="${x.n}"><div class="a">${esc(x.a)} <span class="mk">${String(x.n).replace(/\d/g,d=>"٠١٢٣٤٥٦٧٨٩"[d])}</span></div>${x.o&&S.okunus?`<div class="tr">${esc(x.o)}</div>`:""}${S.meal&&x.t?`<div class="t">${esc(x.t)}</div>`:""}
     <div class="aacts"><button data-act="mark" class="${S.son&&S.son.s===n&&S.son.a===x.n?"on":""}" aria-label="Burada kaldım">${ic("pin")}</button><button data-act="fav" class="${isFav(it)?"on":""}" aria-label="Kaydet">${ic("bm")}</button>${S.tefsir&&x.c?"":""}</div></div>`}).join("")+
    `<div class="row between" style="margin-top:16px">${n>1?`<button class="btn line sm" data-go="sure-${n-1}">‹ ${esc(SURELER[n-2][0])}</button>`:"<span></span>"}${n<114?`<button class="btn sm" data-go="sure-${n+1}">${esc(SURELER[n][0])} ›</button>`:""}</div>
    <p class="muted small" style="margin-top:14px">Meal: Elmalılı Hamdi Yazır. Kaynak: tanzil.net / alquran.cloud.</p>`};
