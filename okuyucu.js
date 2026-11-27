@@ -164,7 +164,10 @@ async function okuyucu(k,opt={}){
     if(!hedef&&sp){sp.classList.add("su");setTimeout(()=>sp.classList.remove("su"),2500);
       bildir(`Kaldığın yerden devam: ${SURELER[y.s-1][0]} ${y.n}. ayet`,()=>{elle=true;M.scrollTop=0;try{localStorage.removeItem(yerKey)}catch(e){}},"Baştan")}
     let latin=ls.get("no.lat")==="1";const latSec=el.querySelector("#lat");const latYaz=()=>{latSec.value=latin?"1":"0";M.querySelectorAll(".lat").forEach(x=>x.classList.toggle("hide",!latin));M.querySelectorAll(".ayetler").forEach(x=>x.classList.toggle("latinli",latin));ls.set("no.lat",latin?"1":"0")};
-    latYaz();latSec.onchange=()=>{latin=latSec.value==="1";latYaz()};
+    latYaz();latSec.onchange=()=>{const g=ustAyet(),a=g&&M.querySelector(`[data-g="${g}"]`),once=a?a.getBoundingClientRect().top:0;
+      latin=latSec.value==="1";geriYukle=Date.now()+800;latYaz();
+      // görünüm değişince aynı ayette kal
+      const yerles=()=>{if(a){M.scrollTop+=a.getBoundingClientRect().top-once;yerKaydet(g)}};yerles();requestAnimationFrame(yerles);setTimeout(yerles,150)};
     // üst bilgi: sure (sayfa/toplam) · sayfa · cüz (sayfa/toplam)
     const uS=el.querySelector("#uSure"),uP=el.querySelector("#uSayfa");let ustT=0;
     const ustYaz=()=>{const g=ustAyet()||liste[0].g,it=liste.find(x=>x.g===g)||liste[0];const sf=M.querySelectorAll(".sf");let p=null;const tp=M.getBoundingClientRect().top+90;

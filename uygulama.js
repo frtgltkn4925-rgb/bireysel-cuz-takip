@@ -134,16 +134,22 @@ async function vSure(el){
    `<div class="row between" style="margin-top:16px">${n>1?`<button class="btn line sm" data-go="sure-${n-1}">‹ ${esc(SURELER[n-2][0])}</button>`:"<span></span>"}${n<114?`<button class="btn sm" data-go="sure-${n+1}">${esc(SURELER[n][0])} ›</button>`:""}</div>
    <p class="muted small" style="margin-top:14px">Meal: Elmalılı Hamdi Yazır. Tefsir: Celâleyn (Mahallî ve Suyûtî, Arapça). Kaynak: tanzil.net / alquran.cloud.</p>`};
   drawBody();
-  el.querySelector("#ml").onclick=e=>{S.meal=!S.meal;save();e.target.classList.toggle("ghost",!S.meal);drawBody()};
-  el.querySelector("#tf").onclick=async e=>{S.tefsir=!S.tefsir;save();e.target.classList.toggle("ghost",!S.tefsir);if(S.tefsir&&!v.some(x=>x.c)){e.target.disabled=true;try{await tefsirEkle(n,v)}catch(er){toast("Tefsir yüklenemedi; internet bağlantısını kontrol edin")}e.target.disabled=false}drawBody()};
+  // görünüm değişince ekrandaki ayette kal; okunan yeri sure başına kaydet
+  const ustAyah=()=>{for(const a of body.querySelectorAll(".ayah")){const r=a.getBoundingClientRect();if(r.bottom>80)return{n:a.dataset.n,top:r.top}}return null};
+  const ciz=()=>{const u=ustAyah();drawBody();if(u){const a=body.querySelector("#a"+u.n);if(a)window.scrollBy(0,a.getBoundingClientRect().top-u.top)}};
+  const syerKey="no.syer."+n;let syerT=0;
+  const syerKaydet=()=>{clearTimeout(syerT);syerT=setTimeout(()=>{if(cur.v!=="sure"||parseInt(cur.p)!==n||!body.isConnected){window.removeEventListener("scroll",syerKaydet);return}const u=ustAyah();if(u)ls.set(syerKey,u.n)},600)};
+  window.addEventListener("scroll",syerKaydet,{passive:true});
+  el.querySelector("#ml").onclick=e=>{S.meal=!S.meal;save();e.target.classList.toggle("ghost",!S.meal);ciz()};
+  el.querySelector("#tf").onclick=async e=>{S.tefsir=!S.tefsir;save();e.target.classList.toggle("ghost",!S.tefsir);if(S.tefsir&&!v.some(x=>x.c)){e.target.disabled=true;try{await tefsirEkle(n,v)}catch(er){toast("Tefsir yüklenemedi; internet bağlantısını kontrol edin")}e.target.disabled=false}ciz()};
   el.querySelector("#dn").onclick=()=>{const k=sureCuzu(n);okuyucu(k,{sure:n})};
-  el.querySelector("#tl").onclick=e=>{if(!v.some(x=>x.o))return toast("Bu kaynakta okunuş yok");S.okunus=!S.okunus;save();e.target.classList.toggle("ghost",!S.okunus);drawBody()};
+  el.querySelector("#tl").onclick=e=>{if(!v.some(x=>x.o))return toast("Bu kaynakta okunuş yok");S.okunus=!S.okunus;save();e.target.classList.toggle("ghost",!S.okunus);ciz()};
   body.onclick=e=>{const b=e.target.closest("[data-act]");if(!b){const ay=e.target.closest(".ayah .a");if(ay){const an=+ay.closest(".ayah").dataset.n,x=v.find(z=>z.n===an);if(x)mealGoster({s:n,n:an,g:x.g,kelime:kelimeBul(ay,e)})}return}const an=+b.closest(".ayah").dataset.n,x=v.find(z=>z.n===an),it={tip:"Ayet",kaynak:`${ad} ${n}:${an}`,metin:x.t,ar:x.a};
     if(b.dataset.act==="mark"){S.son={s:n,a:an};save();body.querySelectorAll('[data-act="mark"]').forEach(q=>q.classList.remove("on"));b.classList.add("on");toast("Kaldığın yer kaydedildi")}
     if(b.dataset.act==="fav"){toggleFav(it);b.classList.toggle("on",isFav(it))}
 };
-  const target=sa||(S.son&&S.son.s===n?S.son.a:0);
-  if(target>1){const t=body.querySelector("#a"+target);t&&setTimeout(()=>t.scrollIntoView({block:"start"}),60)}
+  const target=sa||+(ls.get(syerKey)||0)||(S.son&&S.son.s===n?S.son.a:0);
+  if(target>1){const t=body.querySelector("#a"+target);if(t){const git=()=>t.scrollIntoView({block:"start"});setTimeout(git,60);try{document.fonts&&document.fonts.ready.then(()=>setTimeout(git,50))}catch(e){}}}
 }
 
 /* ============ CÜZ TAKİBİ ============ */
