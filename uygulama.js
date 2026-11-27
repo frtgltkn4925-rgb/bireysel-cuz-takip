@@ -123,7 +123,7 @@ function vKuran(el){
   el.innerHTML=`<div class="seg"><button class="on">Sureler</button><button data-go="cuz">Cüzler</button><button data-go="konu">Konu ara</button></div>
   <input class="in" id="q" placeholder="Sure ara: Yasin, Mülk, 36…" style="margin-bottom:10px" aria-label="Sure ara">
   <div class="rows" id="sl"></div>
-  <p class="muted small">Arapça metin, Elmalılı Hamdi Yazır meali ve Celâleyn tefsiri internetten bir kez yüklenir, sonra internetsiz de açılır.</p>`;
+  <p class="muted small">Arapça metin ve Elmalılı Hamdi Yazır meali internetten bir kez yüklenir, sonra internetsiz de açılır.</p>`;
   const norm=s=>s.toLocaleLowerCase("tr").normalize("NFD").replace(/[\u0300-\u036f']/g,"");
   const draw=q=>{el.querySelector("#sl").innerHTML=SURELER.map((s,i)=>[s,i+1]).filter(([s,n])=>!q||norm(s[0]).includes(norm(q))||String(n)===q.trim()).map(([s,n])=>`<div class="rw" data-go="sure-${n}"><div class="num">${n}</div><div class="tx"><b style="font-family:var(--serif)">${esc(s[0])}</b><span>${s[1]} ayet${S.son&&S.son.s===n?" · kaldığın yer":""}</span></div></div>`).join("")||`<div class="empty">Bu adla sure yok</div>`};
   draw();el.querySelector("#q").oninput=e=>draw(e.target.value);
@@ -134,7 +134,7 @@ async function vSure(el){
   setTitle(ad+" Suresi",`${n}. sure · ${adet} ayet`);
   el.style.setProperty("--afs",S.afs+"px");
   el.innerHTML=`<div class="surehead"><b>${esc(ad)}</b><div class="muted">${n}. sure · ${adet} ayet</div>
-   <div class="row" style="gap:6px;justify-content:center;margin-top:8px"><button class="btn sm ghost" id="fm" aria-label="Yazıyı küçült">A−</button><button class="btn sm ghost" id="fp" aria-label="Yazıyı büyüt">A+</button><button class="btn sm ${S.meal?"":"ghost"}" id="ml">Meal</button><button class="btn sm ${S.okunus?"":"ghost"}" id="tl">Okunuş</button><button class="btn sm ${S.tefsir?"":"ghost"}" id="tf">Tefsir</button><button class="btn sm acc" id="dn">▶ Dinle</button></div></div>
+   <div class="row" style="gap:6px;justify-content:center;margin-top:8px"><button class="btn sm ghost" id="fm" aria-label="Yazıyı küçült">A−</button><button class="btn sm ghost" id="fp" aria-label="Yazıyı büyüt">A+</button><button class="btn sm ${S.meal?"":"ghost"}" id="ml">Meal</button><button class="btn sm ${S.okunus?"":"ghost"}" id="tl">Okunuş</button><button class="btn sm acc" id="dn">▶ Dinle</button></div></div>
    <div id="body"><div class="spin"></div></div>`;
   const setF=()=>{el.style.setProperty("--afs",S.afs+"px");save()};
   el.querySelector("#fm").onclick=()=>{S.afs=Math.max(20,S.afs-2);setF()};
@@ -143,10 +143,10 @@ async function vSure(el){
   if(cur.v!=="sure"||parseInt(cur.p)!==n)return;
   const body=el.querySelector("#body"),v=d.v;
   const drawBody=()=>{body.innerHTML=(n!==1&&n!==9?`<div class="besmele">${BESMELE}</div>`:"")+(d.src==="yerel"?`<p class="muted small">İnternetsiz metin gösteriliyor (sade meal).</p>`:"")+
-   v.map(x=>{const it={tip:"Ayet",kaynak:`${ad} ${n}:${x.n}`,metin:x.t,ar:x.a};return `<div class="ayah" id="a${x.n}" data-n="${x.n}"><div class="a">${esc(x.a)} <span class="mk">${x.n}</span></div>${x.o&&S.okunus?`<div class="tr">${esc(x.o)}</div>`:""}${S.meal&&x.t?`<div class="t">${esc(x.t)}</div>`:""}${S.tefsir&&x.c?`<div class="tf"><b>Celâleyn</b><div class="arx">${esc(x.c)}</div></div>`:""}
+   v.map(x=>{const it={tip:"Ayet",kaynak:`${ad} ${n}:${x.n}`,metin:x.t,ar:x.a};return `<div class="ayah" id="a${x.n}" data-n="${x.n}"><div class="a">${esc(x.a)} <span class="mk">${x.n}</span></div>${x.o&&S.okunus?`<div class="tr">${esc(x.o)}</div>`:""}${S.meal&&x.t?`<div class="t">${esc(x.t)}</div>`:""}
     <div class="aacts"><button data-act="mark" class="${S.son&&S.son.s===n&&S.son.a===x.n?"on":""}" aria-label="Burada kaldım">${ic("pin")}</button><button data-act="fav" class="${isFav(it)?"on":""}" aria-label="Kaydet">${ic("bm")}</button>${S.tefsir&&x.c?"":""}</div></div>`}).join("")+
    `<div class="row between" style="margin-top:16px">${n>1?`<button class="btn line sm" data-go="sure-${n-1}">‹ ${esc(SURELER[n-2][0])}</button>`:"<span></span>"}${n<114?`<button class="btn sm" data-go="sure-${n+1}">${esc(SURELER[n][0])} ›</button>`:""}</div>
-   <p class="muted small" style="margin-top:14px">Meal: Elmalılı Hamdi Yazır. Tefsir: Celâleyn (Mahallî ve Suyûtî, Arapça). Kaynak: tanzil.net / alquran.cloud.</p>`};
+   <p class="muted small" style="margin-top:14px">Meal: Elmalılı Hamdi Yazır. Kaynak: tanzil.net / alquran.cloud.</p>`};
   drawBody();
   // görünüm değişince ekrandaki ayette kal; okunan yeri sure başına kaydet
   const ustAyah=()=>{for(const a of body.querySelectorAll(".ayah")){const r=a.getBoundingClientRect();if(r.bottom>80)return{n:a.dataset.n,top:r.top}}return null};
@@ -155,7 +155,7 @@ async function vSure(el){
   const syerKaydet=()=>{clearTimeout(syerT);syerT=setTimeout(()=>{if(cur.v!=="sure"||parseInt(cur.p)!==n||!body.isConnected){window.removeEventListener("scroll",syerKaydet);return}const u=ustAyah();if(u)ls.set(syerKey,u.n)},600)};
   window.addEventListener("scroll",syerKaydet,{passive:true});
   el.querySelector("#ml").onclick=e=>{S.meal=!S.meal;save();e.target.classList.toggle("ghost",!S.meal);ciz()};
-  el.querySelector("#tf").onclick=async e=>{S.tefsir=!S.tefsir;save();e.target.classList.toggle("ghost",!S.tefsir);if(S.tefsir&&!v.some(x=>x.c)){e.target.disabled=true;try{await tefsirEkle(n,v)}catch(er){toast("Tefsir yüklenemedi; internet bağlantısını kontrol edin")}e.target.disabled=false}ciz()};
+  
   el.querySelector("#dn").onclick=()=>{ // ekranda okunan ayetten aç
     let an=1;for(const a of body.querySelectorAll(".ayah")){if(a.getBoundingClientRect().bottom>80){an=+a.dataset.n;break}}
     const x=v.find(z=>z.n===an);let k=1;CUZ.forEach(([cs,ca],i)=>{if(cs<n||(cs===n&&ca<=an))k=i+1});
@@ -295,7 +295,7 @@ const CATS={kuran:"Kur'an ve meal",tefsir:"Tefsir",siyer:"Siyer",hadis:"Hadis",c
 function vKitaplik(el){
   const groups=Object.keys(CATS).map(c=>[c,S.lib.filter(l=>l.cat===c)]).filter(([,a])=>a.length);
   el.innerHTML=`<div class="rows">
-   ${[["siyer","risale","Siyer-i Nebî",SIYER.length+" bölüm · Peygamberimizin hayatı"],["peygamber","books","Peygamberler","Kur'an'da adı geçen 25 peygamber"],["sahabe","group","Sahabeler",SAHABELER.length+" sahabinin hayatı"],["hadisler","hadis","Hadis Ansiklopedisi","Konulara göre sahih hadisler ve açıklamaları"],["hadis","hadis","Sahih Hadisler","Buhârî ve Müslim'den seçmeler"],["kuran","quran","Kur'an-ı Kerîm","Arapça, Elmalılı meali, Celâleyn tefsiri"]].map(([g,i,t,s])=>`<div class="rw" data-go="${g}"><div class="ico">${ic(i)}</div><div class="tx"><b>${t}</b><span>${s}</span></div><span class="chev">${ic("chev",18)}</span></div>`).join("")}</div>
+   ${[["siyer","risale","Siyer-i Nebî",SIYER.length+" bölüm · Peygamberimizin hayatı"],["peygamber","books","Peygamberler","Kur'an'da adı geçen 25 peygamber"],["sahabe","group","Sahabeler",SAHABELER.length+" sahabinin hayatı"],["hadisler","hadis","Hadis Ansiklopedisi","Konulara göre sahih hadisler ve açıklamaları"],["hadis","hadis","Sahih Hadisler","Buhârî ve Müslim'den seçmeler"],["kuran","quran","Kur'an-ı Kerîm","Arapça, Elmalılı meali"]].map(([g,i,t,s])=>`<div class="rw" data-go="${g}"><div class="ico">${ic(i)}</div><div class="tx"><b>${t}</b><span>${s}</span></div><span class="chev">${ic("chev",18)}</span></div>`).join("")}</div>
   <h2 class="sec">PDF'lerim <small>${S.lib.length} kitap</small></h2>
   <div class="row" style="gap:8px;margin-bottom:10px"><select class="in" id="cat" style="flex:1" aria-label="Kategori">${Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select><button class="btn acc" id="add">${ic("plus",16)} PDF ekle</button></div>
   ${groups.length?groups.map(([c,a])=>`<div class="muted small" style="margin:12px 2px 6px;font-weight:600">${CATS[c]}</div><div class="rows">${a.map(l=>`<div class="rw" data-go="pdf-${l.id}"><div class="ico" style="color:#b0392a">${ic("pdf")}</div><div class="tx"><b>${esc(l.title)}</b><span>${(l.size/1048576).toFixed(1)} MB · bu telefonda${l.page>1?" · s. "+l.page:""}</span></div><button class="ib" style="background:none;color:var(--muted)" data-del="${l.id}" aria-label="Sil">${ic("trash",18)}</button></div>`).join("")}</div>`).join(""):`<div class="empty">Henüz PDF eklemedin. Telefonundaki kitapları yukarıdaki düğmeyle ekle.</div>`}

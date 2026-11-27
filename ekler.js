@@ -10,12 +10,14 @@ async function loadSure(n){
     const j=await zamanli(ed(KURAN_YAZIM)).catch(()=>zamanli(ed("quran-uthmani")));
     const [ar,ml,tl]=j.data;
     const v=ar.ayahs.map((a,i)=>{let t=a.text;if(i===0&&n!==1&&n!==9)t=t.replace(BESM2,"");return{n:a.numberInSurah,g:a.number,a:t,t:ml&&ml.ayahs[i]?ml.ayahs[i].text:"",o:tl&&tl.ayahs[i]?tl.ayahs[i].text:""}});
-    qCache[n]={v,src:"api"};if(S.tefsir){try{await tefsirEkle(n,v)}catch(e){}}return qCache[n]}
+    qCache[n]={v,src:"api"};return qCache[n]}
   catch(e){
     if(GOMULU[n])return qCache[n]={v:GOMULU[n].map((x,i)=>({n:i+1,a:x[0],t:x[1],o:""})),src:"yerel"};
     const d=await zamanli("https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/chapters/"+n+".json");
     return qCache[n]={v:d.verses.map((x,i)=>({n:x.id||i+1,a:x.text,t:"",o:""})),src:"ar"}}
 }
+// Türkçe tefsir: Diyanet Kur'an Yolu, Diyanet'in kendi sitesinde açılır (metin kopyalanmaz)
+const tefsirAdres=(s,n)=>`https://kuran.diyanet.gov.tr/kuran?sure=${s}&ayet=${n}&mode=tefsir`;
 async function tefsirEkle(n,v){const j=await zamanli(API+"surah/"+n+"/ar.jalalayn");j.data.ayahs.forEach((a,i)=>{if(v[i])v[i].c=a.text})}
 const mCache={};
 async function cuzMetni(k){
@@ -321,7 +323,7 @@ function vAyarlar(el){
    <div class="rw" id="bk"><div class="ico">${ic("dl")}</div><div class="tx"><b>Yedek indir</b><span>Hatim, plan ve kayıtlarını dosyaya al</span></div></div>
    <div class="rw" id="rs"><div class="ico">${ic("plus")}</div><div class="tx"><b>Yedekten geri yükle</b><span>Daha önce indirdiğin .json dosyası</span></div></div></div>
   <h2 class="sec">Kaynaklar</h2>
-  <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali, Türkçe okunuş ve Celâleyn tefsiri: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Hadis Ansiklopedisi: HadeethEnc.com. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div><div class="small muted" id="surumBilgi" style="text-align:center;margin:14px 0 4px;padding:6px">Uygulama sürümü</div>`;try{caches.keys().then(k=>{const v=k.filter(x=>/^no-v\d+$/.test(x)).sort((a,b)=>b.slice(4)-a.slice(4))[0];const d=el.querySelector("#surumBilgi");if(d){let n=0,t=0;d.onclick=()=>{clearTimeout(t);t=setTimeout(()=>{n=0},2500);if(++n>=7){n=0;if(!S.hatimAcik)hatimGiris()}}}if(d&&v)d.textContent="Uygulama sürümü: v"+v.slice(4)})}catch(e){}
+  <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali ve Türkçe okunuş: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Hadis Ansiklopedisi: HadeethEnc.com. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div><div class="small muted" id="surumBilgi" style="text-align:center;margin:14px 0 4px;padding:6px">Uygulama sürümü</div>`;try{caches.keys().then(k=>{const v=k.filter(x=>/^no-v\d+$/.test(x)).sort((a,b)=>b.slice(4)-a.slice(4))[0];const d=el.querySelector("#surumBilgi");if(d){let n=0,t=0;d.onclick=()=>{clearTimeout(t);t=setTimeout(()=>{n=0},2500);if(++n>=7){n=0;if(!S.hatimAcik)hatimGiris()}}}if(d&&v)d.textContent="Uygulama sürümü: v"+v.slice(4)})}catch(e){}
   cdBagla(el);el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#skg").onchange=e=>{S.sesliKomut=e.target.checked;save();skGoster()};el.querySelector("#skc").onchange=e=>{S.sesliCevap=e.target.checked;save()};el.querySelector("#skr").onchange=e=>{S.sesliRehber=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
   el.querySelector("#tm").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tema=b.dataset.t;applyTheme();save();el.querySelectorAll(".th").forEach(t=>t.classList.toggle("on",t===b))};
   const fz=d=>{S.afs=Math.max(20,Math.min(50,S.afs+d));save();el.querySelector("#fs").textContent=S.afs;el.querySelector("#fx").style.fontSize=S.afs+"px"};

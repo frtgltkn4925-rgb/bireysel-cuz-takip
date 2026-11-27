@@ -2,7 +2,7 @@
 /* ===== İnternetsiz kullanım =====
    Kur'an'ın tamamı (Arapça, Elmalılı meali, okunuş, Celâleyn), 30 cüz, konu araması için meal ve
    seçili şehrin 12 aylık namaz vakitleri bir kez indirilir. İndirilenleri sw.js saklar, uygulama internetsiz açılır. */
-const CD_URL=()=>{const u=[];for(let n=1;n<=114;n++){u.push(API+"surah/"+n+"/editions/"+KURAN_YAZIM+",tr.yazir,tr.transliteration");u.push(API+"surah/"+n+"/ar.jalalayn")}
+const CD_URL=()=>{const u=[];for(let n=1;n<=114;n++){u.push(API+"surah/"+n+"/editions/"+KURAN_YAZIM+",tr.yazir,tr.transliteration")}
   for(let k=1;k<=30;k++){u.push(API+"juz/"+k+"/"+KURAN_YAZIM);u.push(API+"juz/"+k+"/tr.transliteration")}return u};
 let cdCalisiyor=false;
 async function cdIndir(ilerle){
@@ -19,7 +19,7 @@ async function cdIndir(ilerle){
 async function cdBoyut(){try{const e=await navigator.storage.estimate();return e.usage?Math.round(e.usage/1048576):0}catch(e){return 0}}
 function cdKart(){const c=S.cevrimdisi;
   return `<div class="card cd-kart"><div class="row between" style="gap:10px;align-items:flex-start"><div><b>${ic("dl",16)} Kur'an ve vakitler telefonda</b>
-    <div class="muted small" style="margin-top:4px">${c?`İndirildi: ${new Date(c.t).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}${c.il?` · Vakitler: ${esc(c.il)}`:""}${c.hata?` · ${c.hata} parça eksik, tekrar indirin`:""}`:"Kur'an'ın tamamı, meal, okunuş, tefsir ve 12 aylık namaz vakitleri telefona indirilsin; internet olmadan da çalışsın."}</div>
+    <div class="muted small" style="margin-top:4px">${c?`İndirildi: ${new Date(c.t).toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"})}${c.il?` · Vakitler: ${esc(c.il)}`:""}${c.hata?` · ${c.hata} parça eksik, tekrar indirin`:""}`:"Kur'an'ın tamamı, meal, okunuş ve 12 aylık namaz vakitleri telefona indirilsin; internet olmadan da çalışsın."}</div>
     <div class="muted small" id="cdBoy"></div></div>
     <button class="btn sm ${c&&!c.hata?"ghost":"acc"}" id="cdBtn" style="white-space:nowrap;flex:none">${c?"Güncelle":"İndir"}</button></div>
     <div class="dp-bar hide" id="cdBar" style="margin-top:10px"><i></i></div></div>`}

@@ -217,7 +217,9 @@ document.head.insertAdjacentHTML("beforeend",`<style>.kel{background:linear-grad
 .kel-a{position:absolute;right:14px;top:10px;font-family:"Scheherazade Yerel","Scheherazade New",serif;font-size:20px;opacity:.8}
 .meal-ar{font-family:"Scheherazade Yerel","Scheherazade New",serif;font-size:26px;line-height:1.9;margin:12px 0 8px;text-align:right;color:var(--ink)}
 .meal-t{font-size:17px;line-height:1.65;color:var(--ink);background:var(--soft,#f3efe4);border-radius:12px;padding:12px 14px;min-height:48px}
-.ayah .a{cursor:pointer}</style>`);
+.ayah .a{cursor:pointer}
+.tf-git{display:inline-block;margin-top:8px;padding:8px 12px;border-radius:10px;background:#eef6f2;color:#0d5c4a;font-weight:700;font-size:14px;text-decoration:none}
+#mtf{text-decoration:none}</style>`);
 
 /* ===== Dokunulan kelime ve Türkçe anlamı (kelime kelime meal: quran.com) ===== */
 const AR_HARF=/[\u0621-\u064A\u066E-\u06D3\u06FA-\u06FF]/;
