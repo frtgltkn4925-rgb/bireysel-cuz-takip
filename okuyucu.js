@@ -159,11 +159,11 @@ async function okuyucu(k,opt={}){
     ustAyetDis=ustAyet;
     yerKaydetDis=()=>{const g=caliyor&&sira>=0?liste[sira].g:ustAyet();if(g)yerKaydet(g)};
     const ust=x=>x.getBoundingClientRect().top-M.getBoundingClientRect().top+M.scrollTop;
-    let hedef=opt.sure?M.querySelector("#s"+opt.sure):opt.sayfa?M.querySelector("#sf"+opt.sayfa):null,y=null,sp=null;
+    let hedef=opt.g?M.querySelector(`[data-g="${opt.g}"]`):opt.sure?M.querySelector("#s"+opt.sure):opt.sayfa?M.querySelector("#sf"+opt.sayfa):null,y=null,sp=null;
     try{y=JSON.parse(ls.get(yerKey)||"null");sp=y&&M.querySelector(`[data-g="${y.g}"]`)}catch(e){}
     // plandaki sayfadan açılsa bile, kaldığı yer o sayfadan ileriyse oradan devam et
-    if(sp&&hedef&&opt.sayfa&&!opt.sure&&ust(sp)>=ust(hedef)-5)hedef=null;
-    const git=()=>{if(elle)return;if(hedef)M.scrollTop=Math.max(0,ust(hedef)-10);else if(sp)M.scrollTop=Math.max(0,ust(sp)-60)};
+    if(sp&&hedef&&opt.sayfa&&!opt.sure&&!opt.g&&ust(sp)>=ust(hedef)-5)hedef=null;
+    const git=()=>{if(elle)return;if(hedef)M.scrollTop=Math.max(0,ust(hedef)-(opt.g?60:10));else if(sp)M.scrollTop=Math.max(0,ust(sp)-60)};
     if(hedef||sp){geriYukle=Date.now()+2500;git();
       // yazı tipi ve okunuş satırları yerleşince konumu yeniden ayarla
       requestAnimationFrame(git);setTimeout(git,350);setTimeout(git,1200);try{document.fonts&&document.fonts.ready.then(()=>{git();setTimeout(git,200)})}catch(e){}}
@@ -182,7 +182,8 @@ async function okuyucu(k,opt={}){
       if(p){const cb=k===1?1:2+(k-1)*20,ct=k===1?21:k===30?23:20;uP.textContent=`Sayfa ${p} • ${k}. Cüz (${p-cb+1}/${ct})`}};
     M.addEventListener("scroll",()=>{if(ustT)return;ustT=requestAnimationFrame(()=>{ustT=0;ustYaz()})},{passive:true});
     ustYaz();sayfaMeta().then(()=>{if(el.isConnected)ustYaz()});
-    if(opt.dinle){const i=opt.sure?liste.findIndex(x=>x.s===opt.sure&&x.n===1):0;kayDur();cal(Math.max(0,i))}
+    if(opt.g&&hedef){hedef.classList.add("su");setTimeout(()=>hedef.classList.remove("su"),2500)}
+    if(opt.dinle){const i=opt.g?liste.findIndex(x=>x.g===opt.g):opt.sure?liste.findIndex(x=>x.s===opt.sure&&x.n===1):0;kayDur();cal(Math.max(0,i))}
   }catch(e){M.innerHTML=`<p class="sol" style="text-align:center;margin-top:40px">Arapça metin yüklenemedi; internet bağlantısını kontrol edin.<br><br><a href="https://kuran.diyanet.gov.tr/mushaf" target="_blank" rel="noopener">Diyanet Kur'an Portalı'nda aç</a></p>`}
 }
 
