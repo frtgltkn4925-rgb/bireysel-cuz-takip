@@ -157,6 +157,7 @@ async function skKomut(ham){const t=skNorm(ham);if(!t)return;const a=skAn(ham);
   if(/^(geri|geri don|kapat|cik|cikis)$/.test(a)){if(oku){oku.querySelector("#kapat").click();return skSoyle("Okuma kapatıldı")}history.back();return skSoyle("Geri dönüldü")}
   {const m=t.match(/^(.+?)\s+(ile ilgili|hakkında|hakkindaki|hakkındaki|konulu|geçen|gecen)\s+(ayetler|ayetleri|ayet)/)||t.match(/^(?:kuranda|kur an da|kur anda)\s+(.+?)(?:\s+(?:ara|konusu|ayetleri))?$/);
     if(m){const k=m[1].trim();if(oku)oku.querySelector("#kapat").click();go("konu-"+encodeURIComponent(k));skSoyle(`Kur'an'da ${k} konusu aranıyor.`);return}}
+  if(S.hatimAcik&&/hatim grub|cuz takip/.test(a)){hatimAc();return skSoyle("Haftalık hatim grubu açılıyor. Kapatmak için sol üstteki geri düğmesine dokunun.")}
   const cevap=await skBilgi(a);if(cevap)return;
   const sesli=/(dinle|oku|okut|baslat|cal)/.test(a),ac=/(^| )(ac|acar|goster|getir)/.test(a);
   if(/c[uü][zs]|(^| )guz/.test(a)){const n=/amme/.test(a)?30:skSayi(t);if(n>=1&&n<=30){if(oku)oku.querySelector("#kapat").click();const cal_=sesli||!ac;skSoyle(`${n}. cüz ${cal_?"okunuyor":"açıldı"}`);okuyucu(n,{dinle:cal_});return}}

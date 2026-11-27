@@ -266,6 +266,7 @@ async function vBugun(el){
    <div id="vk">${S.il?`<div class="spin" style="border-top-color:#fff"></div>`:`<p class="h-bos">Namaz vakitleri ve hava durumu için şehrinizi seçin.</p>`}</div>
    <div class="h-hava" id="hv"></div></section>
   <div class="hizli">${hizli.map(([g,i,t])=>`<button data-go="${g}"><span>${ic(i,22)}</span>${t}</button>`).join("")}</div>
+  ${hatimKarti()}
   <h2 class="sec">Öğretmenler için</h2><div class="rows dp-kart">${dpKart()}</div>
   ${S.son?`<div class="card devam" data-go="sure-${S.son.s}-a${S.son.a}"><div class="ico2">${ic("bm",20)}</div><div><span class="muted small">Kaldığınız yer</span><b>${esc(SURELER[S.son.s-1][0])} · ${S.son.a}. ayet</b></div><span class="chev">${ic("chev",18)}</span></div>`:""}
   <h2 class="sec">Grup okuma</h2>${grupKarti()}
@@ -304,6 +305,7 @@ function vAyarlar(el){
    <label class="row between" style="margin-top:8px"><span>Okunuşu göster</span><input type="checkbox" id="ok" ${S.okunus?"checked":""}></label>
    <label class="row between" style="margin-top:8px"><span>Tefsiri göster (Celâleyn)</span><input type="checkbox" id="tf" ${S.tefsir?"checked":""}></label></div>
   <h2 class="sec">İnternetsiz kullanım</h2>${typeof cdKart==="function"?cdKart():""}
+  ${S.hatimAcik?`<h2 class="sec">Haftalık hatim grubu</h2>${hatimAyarHTML()}`:""}
   <h2 class="sec">Açılış</h2>
   <div class="card"><label class="row between"><span>Açılışta besmele ve selam</span><input type="checkbox" id="acs" ${S.acilis!==false?"checked":""}></label>
    <p class="muted small" style="margin:6px 0 10px">Uygulama her açıldığında besmele hafız sesinden okunur; “${ACILIS_SELAM}” yazısı ekranda görünür.</p><button class="btn sm ghost" id="acd">Şimdi dinle</button></div>
@@ -318,7 +320,7 @@ function vAyarlar(el){
    <div class="rw" id="bk"><div class="ico">${ic("dl")}</div><div class="tx"><b>Yedek indir</b><span>Hatim, plan ve kayıtlarını dosyaya al</span></div></div>
    <div class="rw" id="rs"><div class="ico">${ic("plus")}</div><div class="tx"><b>Yedekten geri yükle</b><span>Daha önce indirdiğin .json dosyası</span></div></div></div>
   <h2 class="sec">Kaynaklar</h2>
-  <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali, Türkçe okunuş ve Celâleyn tefsiri: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Hadis Ansiklopedisi: HadeethEnc.com. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div><div class="small muted" id="surumBilgi" style="text-align:center;margin:14px 0 4px"></div>`;try{caches.keys().then(k=>{const v=k.filter(x=>/^no-v\d+$/.test(x)).sort((a,b)=>b.slice(4)-a.slice(4))[0];const d=el.querySelector("#surumBilgi");if(d&&v)d.textContent="Uygulama sürümü: v"+v.slice(4)})}catch(e){}
+  <div class="card small muted">Kur'an metni, Elmalılı Hamdi Yazır meali, Türkçe okunuş ve Celâleyn tefsiri: tanzil.net verileri, alquran.cloud üzerinden. Kıraat sesleri: islamic.network. Hadis Ansiklopedisi: HadeethEnc.com. Namaz vakitleri: Aladhan (Diyanet yöntemi). Hava: Open-Meteo. Siyer, peygamber ve sahabe metinleri bu uygulama için özgün olarak yazılmıştır. Seçme hadisler Buhârî ve Müslim'dendir; anlamlar sadeleştirilmiştir. Eklediğiniz PDF'ler yalnızca telefonunuzda kalır.<br><br><a href="gizlilik.html">Gizlilik politikası</a></div><div class="small muted" id="surumBilgi" style="text-align:center;margin:14px 0 4px;padding:6px">Uygulama sürümü</div>`;try{caches.keys().then(k=>{const v=k.filter(x=>/^no-v\d+$/.test(x)).sort((a,b)=>b.slice(4)-a.slice(4))[0];const d=el.querySelector("#surumBilgi");if(d){let n=0,t=0;d.onclick=()=>{clearTimeout(t);t=setTimeout(()=>{n=0},2500);if(++n>=7){n=0;if(!S.hatimAcik)hatimGiris()}}}if(d&&v)d.textContent="Uygulama sürümü: v"+v.slice(4)})}catch(e){}
   cdBagla(el);el.querySelector("#acs").onchange=e=>{S.acilis=e.target.checked;save()};el.querySelector("#skg").onchange=e=>{S.sesliKomut=e.target.checked;save();skGoster()};el.querySelector("#skc").onchange=e=>{S.sesliCevap=e.target.checked;save()};el.querySelector("#skr").onchange=e=>{S.sesliRehber=e.target.checked;save()};el.querySelector("#acd").onclick=()=>acilisGoster(true);el.querySelector("#il").onclick=()=>ilSec();el.querySelector("#pl").onclick=planAyarSheet;
   el.querySelector("#tm").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;S.tema=b.dataset.t;applyTheme();save();el.querySelectorAll(".th").forEach(t=>t.classList.toggle("on",t===b))};
   const fz=d=>{S.afs=Math.max(20,Math.min(50,S.afs+d));save();el.querySelector("#fs").textContent=S.afs;el.querySelector("#fx").style.fontSize=S.afs+"px"};

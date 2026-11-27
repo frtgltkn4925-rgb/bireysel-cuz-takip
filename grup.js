@@ -171,3 +171,48 @@ function grupKarti(){const g=aktifGrup();
    <div class="serit2 acik">${d.yer.map(x=>`<i class="${x?(x.okundu?"d":"v"):""}"></i>`).join("")}</div>
    <div class="row between"><span class="small">${d.ben?`Cüzünüz: <b>${d.ben}</b> · ${ok?"✓ okundu":"okunmadı"}`:"Henüz cüzünüz yok"}</span><span class="small muted">${kg>=0?(kg===0?"Son gün bugün":kg+" gün kaldı"):""}</span></div></div>`}
 function grupArkaPlan(){const g=aktifGrup();if(g&&/^https?:/.test(GRUP_API))grupDurum(g.kod).catch(()=>{})}
+
+/* ===== Haftalık hatim grubu: Cüz Takip uygulaması olduğu gibi, uygulamanın içinde =====
+   Cüz Takip aynı sitede (alan adının kökünde) çalışır; üyeler, cüz sırası, yönetici şifresi ve WhatsApp mesajları
+   kendi sunucusundan gelir. Burada yalnızca tam ekran açılır. */
+const HATIM_ADRES=location.origin+"/";
+function hatimKarti(){if(!S.hatimAcik)return "";return `<h2 class="sec">Haftalık hatim</h2><div class="card gk0 hk" role="button" tabindex="0" onclick="hatimAc()"><div class="ico2">${ic("cuz",22)}</div><div><b>Haftalık hatim grubu</b><span class="muted small">Cüz Takip · cüz sırası, okundu işaretleme, hatırlatma</span></div><span class="chev">${ic("chev",18)}</span></div>`}
+function hatimAc(){if(!S.hatimAcik||document.querySelector(".hatim-k"))return;
+  const el=document.createElement("div");el.className="hatim-k";
+  el.innerHTML=`<div class="hatim-ust"><button class="ik" id="hkGeri" aria-label="Geri">←</button><div class="hatim-bas"><b>Haftalık hatim grubu</b><span>Cüz Takip</span></div><button class="ik" id="hkYenile" aria-label="Yenile">⟳</button></div>
+    <div class="hatim-yuk" id="hkYuk"><div class="spin"></div><span>Cüz Takip açılıyor…</span></div>
+    <iframe id="hkCer" src="${HATIM_ADRES}" title="Cüz Takip" allow="clipboard-read; clipboard-write; web-share; notifications"></iframe>`;
+  document.body.appendChild(el);document.body.style.overflow="hidden";
+  const cer=el.querySelector("#hkCer"),yuk=el.querySelector("#hkYuk");
+  let birak=null;const kapat=()=>{el.remove();document.body.style.overflow="";birak&&birak()};
+  birak=katmanAc(el,()=>{el.remove();document.body.style.overflow=""});
+  cer.onload=()=>{yuk.classList.add("hide")};
+  setTimeout(()=>{if(!navigator.onLine){yuk.innerHTML=`<span>Hatim grubu için internet bağlantısı gerekiyor.</span>`}},4000);
+  el.querySelector("#hkGeri").onclick=kapat;
+  el.querySelector("#hkYenile").onclick=()=>{yuk.classList.remove("hide");cer.src=HATIM_ADRES+"?t="+Date.now()}}
+// sesli komut ya da bağlantıyla #hatim açılırsa: ana sayfaya dön, hatim grubunu üstte aç
+function vHatim(el){el.innerHTML="";if(!S.hatimAcik){go("home");return}setTimeout(()=>{try{history.replaceState(null,"",location.pathname+location.search+"#home")}catch(e){}cur=parse();render();hatimAc()},0)}
+document.head.insertAdjacentHTML("beforeend",`<style>
+.hatim-k{position:fixed;inset:0;z-index:46;background:var(--bg,#f1f5f2);display:flex;flex-direction:column}
+.hatim-ust{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 10px 8px;background:#0d4a3e;color:#fff}
+.hatim-ust .ik{background:rgba(255,255,255,.14);color:#fff;border:0;width:40px;height:40px;border-radius:12px;font-size:20px}
+.hatim-bas{flex:1;display:flex;flex-direction:column;line-height:1.2}.hatim-bas span{font-size:12px;opacity:.75}
+.hatim-k iframe{flex:1;width:100%;border:0;background:#fff}
+.hatim-yuk{position:absolute;left:0;right:0;top:120px;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted,#5d6f67);pointer-events:none}
+.hatim-yuk.hide{display:none}
+body:has(.hatim-k) .sk-mik{display:none}
+.hk .ico2{background:linear-gradient(135deg,#14705c,#0d4a3e);color:#fff}
+</style>`);
+
+/* Kart yalnızca yönetici şifresiyle açılır (şifre burada açık yazılmaz, özeti karşılaştırılır) */
+const HATIM_OZET="ab95b4bbf3d02f3e7590281ab3b818500d4f516b12cbe8f5cdd37b5656f24a32";
+async function hatimSifreDogru(t){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(String(t).trim().toUpperCase()));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")===HATIM_OZET}catch(e){return false}}
+function hatimAyarHTML(){return S.hatimAcik
+  ?`<div class="card"><label class="row between"><span>Haftalık hatim grubu ana ekranda</span><input type="checkbox" checked onchange="hatimKapat(this)"></label><p class="muted small" style="margin:6px 0 0">Kapatırsanız tekrar açmak için yönetici şifresi gerekir.</p></div>`
+  :""}
+function hatimKapat(cb){S.hatimAcik=false;save();toast("Hatim grubu kartı gizlendi");render()}
+function hatimGiris(){sheet(`<h3>Yönetici girişi</h3><p class="muted small">Cüz Takip yönetici şifrenizi yazın. Haftalık hatim grubu kartı yalnızca bu telefonda açılır.</p>
+  <input type="password" id="hs" autocomplete="current-password" style="width:100%;margin:8px 0" aria-label="Şifre"><div class="row" style="gap:8px"><button class="btn" id="hsOk">Aç</button><button class="btn ghost" id="hsIp">Vazgeç</button></div><p class="small" id="hsHata" style="color:#b42318;min-height:18px"></p>`,(sh,close)=>{
+  const i=sh.querySelector("#hs");setTimeout(()=>i.focus(),100);sh.querySelector("#hsIp").onclick=close;
+  const dene=async()=>{if(await hatimSifreDogru(i.value)){S.hatimAcik=true;save();close();toast("Haftalık hatim grubu ana ekrana eklendi");render()}else{sh.querySelector("#hsHata").textContent="Şifre yanlış.";i.select()}};
+  sh.querySelector("#hsOk").onclick=dene;i.onkeydown=e=>{if(e.key==="Enter")dene()}})}
