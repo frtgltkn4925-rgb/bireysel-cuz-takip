@@ -1,12 +1,13 @@
 "use strict";
 /* ============ KUR'AN METNİ (meal, okunuş, tefsir) ============ */
 const API="https://api.alquran.cloud/v1/";
-const BESM2=/^بِسْمِ\s+\S+\s+\S+\s+\S+\s*/;
+const KURAN_YAZIM="quran-simple",BESM2=/^بِسْمِ\s+\S+\s+\S+\s+\S+\s*/;
 async function zamanli(url,ms=15000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error("HTTP "+r.status);return await r.json()}finally{clearTimeout(t)}}
 const qCache={};
 async function loadSure(n){
   if(qCache[n])return qCache[n];
-  try{const j=await zamanli(API+"surah/"+n+"/editions/quran-uthmani,tr.yazir,tr.transliteration");
+  try{const ed=e=>API+"surah/"+n+"/editions/"+e+",tr.yazir,tr.transliteration"; // Türk mushafına yakın sade yazım; olmazsa eski (önceden indirilmiş) Osmânî metin
+    const j=await zamanli(ed(KURAN_YAZIM)).catch(()=>zamanli(ed("quran-uthmani")));
     const [ar,ml,tl]=j.data;
     const v=ar.ayahs.map((a,i)=>{let t=a.text;if(i===0&&n!==1&&n!==9)t=t.replace(BESM2,"");return{n:a.numberInSurah,g:a.number,a:t,t:ml&&ml.ayahs[i]?ml.ayahs[i].text:"",o:tl&&tl.ayahs[i]?tl.ayahs[i].text:""}});
     qCache[n]={v,src:"api"};if(S.tefsir){try{await tefsirEkle(n,v)}catch(e){}}return qCache[n]}
@@ -19,7 +20,7 @@ async function tefsirEkle(n,v){const j=await zamanli(API+"surah/"+n+"/ar.jalalay
 const mCache={};
 async function cuzMetni(k){
   if(mCache[k])return mCache[k];let out;
-  try{const [ar,la]=await Promise.all([zamanli(API+"juz/"+k+"/quran-uthmani"),zamanli(API+"juz/"+k+"/tr.transliteration").catch(()=>null)]);
+  try{const [ar,la]=await Promise.all([zamanli(API+"juz/"+k+"/"+KURAN_YAZIM).catch(()=>zamanli(API+"juz/"+k+"/quran-uthmani")),zamanli(API+"juz/"+k+"/tr.transliteration").catch(()=>null)]);
     const lat=la&&la.data&&la.data.ayahs||[];
     out=ar.data.ayahs.map((a,i)=>{let tx=a.text;const s=a.surah.number,n=a.numberInSurah;if(n===1&&s!==1&&s!==9)tx=tx.replace(BESM2,"");return{s,n,g:a.number,p:a.page,j:a.juz,a:tx,l:lat[i]?String(lat[i].text).replace(/<[^>]+>/g,""):""}})}
   catch(e){const r=aralik(k),ss=[];for(let s=r.s;s<=r.es;s++)ss.push(s);

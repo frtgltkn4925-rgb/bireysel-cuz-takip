@@ -2,8 +2,8 @@
 /* ===== İnternetsiz kullanım =====
    Kur'an'ın tamamı (Arapça, Elmalılı meali, okunuş, Celâleyn), 30 cüz, konu araması için meal ve
    seçili şehrin 12 aylık namaz vakitleri bir kez indirilir. İndirilenleri sw.js saklar, uygulama internetsiz açılır. */
-const CD_URL=()=>{const u=[];for(let n=1;n<=114;n++){u.push(API+"surah/"+n+"/editions/quran-uthmani,tr.yazir,tr.transliteration");u.push(API+"surah/"+n+"/ar.jalalayn")}
-  for(let k=1;k<=30;k++){u.push(API+"juz/"+k+"/quran-uthmani");u.push(API+"juz/"+k+"/tr.transliteration")}return u};
+const CD_URL=()=>{const u=[];for(let n=1;n<=114;n++){u.push(API+"surah/"+n+"/editions/"+KURAN_YAZIM+",tr.yazir,tr.transliteration");u.push(API+"surah/"+n+"/ar.jalalayn")}
+  for(let k=1;k<=30;k++){u.push(API+"juz/"+k+"/"+KURAN_YAZIM);u.push(API+"juz/"+k+"/tr.transliteration")}return u};
 let cdCalisiyor=false;
 async function cdIndir(ilerle){
   if(cdCalisiyor)return;cdCalisiyor=true;
