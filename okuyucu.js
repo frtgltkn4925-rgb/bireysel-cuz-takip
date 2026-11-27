@@ -144,13 +144,23 @@ async function okuyucu(k,opt={}){
     const yerKey="no.yer."+k;let yerT=0;
     const yerKaydet=g=>{const it=liste.find(x=>x.g===g);if(it)ls.set(yerKey,JSON.stringify({g,s:it.s,n:it.n}))};
     const ustAyet=()=>{const ust=M.getBoundingClientRect().top+40;for(const a of M.querySelectorAll(".ay")){if(a.getBoundingClientRect().bottom>ust)return +a.dataset.g}return 0};
-    M.addEventListener("scroll",()=>{clearTimeout(yerT);yerT=setTimeout(()=>{const g=ustAyet();if(g)yerKaydet(g)},500)},{passive:true});
+    let geriYukle=0,elle=false; // kaldığı yere götürülürken ara kaydı yazma
+    ["touchstart","wheel","keydown"].forEach(ev=>M.addEventListener(ev,()=>{elle=true},{passive:true}));
+    M.addEventListener("scroll",()=>{clearTimeout(yerT);yerT=setTimeout(()=>{if(Date.now()<geriYukle&&!elle)return;const g=ustAyet();if(g)yerKaydet(g)},500)},{passive:true});
+    const disKaydet=()=>{if(el.isConnected&&(Date.now()>=geriYukle||elle))yerKaydetDis()};
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)disKaydet()});window.addEventListener("pagehide",disKaydet);
     yerKaydetDis=()=>{const g=caliyor&&sira>=0?liste[sira].g:ustAyet();if(g)yerKaydet(g)};
-    const hedef=opt.sure?M.querySelector("#s"+opt.sure):opt.sayfa?M.querySelector("#sf"+opt.sayfa):null;
-    if(hedef){M.scrollTop=Math.max(0,hedef.getBoundingClientRect().top-M.getBoundingClientRect().top+M.scrollTop-10)}
-    else try{const y=JSON.parse(ls.get(yerKey)||"null");const sp=y&&M.querySelector(`[data-g="${y.g}"]`);
-      if(sp){M.scrollTop=Math.max(0,sp.getBoundingClientRect().top-M.getBoundingClientRect().top+M.scrollTop-60);sp.classList.add("su");setTimeout(()=>sp.classList.remove("su"),2500);
-        bildir(`Kaldığın yerden devam: ${SURELER[y.s-1][0]} ${y.n}. ayet`,()=>{M.scrollTop=0;try{localStorage.removeItem(yerKey)}catch(e){}},"Baştan")}}catch(e){}
+    const ust=x=>x.getBoundingClientRect().top-M.getBoundingClientRect().top+M.scrollTop;
+    let hedef=opt.sure?M.querySelector("#s"+opt.sure):opt.sayfa?M.querySelector("#sf"+opt.sayfa):null,y=null,sp=null;
+    try{y=JSON.parse(ls.get(yerKey)||"null");sp=y&&M.querySelector(`[data-g="${y.g}"]`)}catch(e){}
+    // plandaki sayfadan açılsa bile, kaldığı yer o sayfadan ileriyse oradan devam et
+    if(sp&&hedef&&opt.sayfa&&!opt.sure&&ust(sp)>=ust(hedef)-5)hedef=null;
+    const git=()=>{if(elle)return;if(hedef)M.scrollTop=Math.max(0,ust(hedef)-10);else if(sp)M.scrollTop=Math.max(0,ust(sp)-60)};
+    if(hedef||sp){geriYukle=Date.now()+2500;git();
+      // yazı tipi ve okunuş satırları yerleşince konumu yeniden ayarla
+      requestAnimationFrame(git);setTimeout(git,350);setTimeout(git,1200);try{document.fonts&&document.fonts.ready.then(()=>{git();setTimeout(git,200)})}catch(e){}}
+    if(!hedef&&sp){sp.classList.add("su");setTimeout(()=>sp.classList.remove("su"),2500);
+      bildir(`Kaldığın yerden devam: ${SURELER[y.s-1][0]} ${y.n}. ayet`,()=>{elle=true;M.scrollTop=0;try{localStorage.removeItem(yerKey)}catch(e){}},"Baştan")}
     let latin=ls.get("no.lat")==="1";const latSec=el.querySelector("#lat");const latYaz=()=>{latSec.value=latin?"1":"0";M.querySelectorAll(".lat").forEach(x=>x.classList.toggle("hide",!latin));M.querySelectorAll(".ayetler").forEach(x=>x.classList.toggle("latinli",latin));ls.set("no.lat",latin?"1":"0")};
     latYaz();latSec.onchange=()=>{latin=latSec.value==="1";latYaz()};
     // üst bilgi: sure (sayfa/toplam) · sayfa · cüz (sayfa/toplam)

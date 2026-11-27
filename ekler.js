@@ -365,7 +365,7 @@ function vbResim(bug,aktif){try{const W=720,H=330,c=document.createElement("canv
     x.textAlign="center";x.fillStyle=on?"#0b3d31":"rgba(255,255,255,.78)";x.font="600 24px Manrope,sans-serif";x.fillText(n,cx+cw/2,cy+42);
     x.fillStyle=on?"#0b3d31":"#ffffff";x.font="700 44px Manrope,sans-serif";x.fillText(bug[i+1],cx+cw/2,cy+94)});
   return c.toDataURL("image/png")}catch(e){return undefined}}
-async function vakitBildirimGuncelle(){
+async function vakitBildirimEski(){ // eski tek vakit bildirimi; yerini bildirim.js aldı
   if(!S.vakitBildirim||!S.il||typeof Notification==="undefined"||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
   try{const now=new Date(),bug=await vakitGun(now);if(!bug)return;
     let aktif=-1;for(let i=0;i<6;i++)if(saatDate(now,bug[i+1])<=now)aktif=i;if(aktif<0)aktif=5;
