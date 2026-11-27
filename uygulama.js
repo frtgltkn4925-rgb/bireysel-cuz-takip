@@ -61,7 +61,21 @@ const IC={
 };
 const ic=(n,s=20)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]||""}</svg>`;
 function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`))return res();const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=()=>rej(new Error("Yüklenemedi"));document.head.appendChild(s)})}
-function sheet(html,onMount){const bg=document.createElement("div");bg.className="sheet-bg";bg.innerHTML=`<div class="sheet" role="dialog">${html}</div>`;bg.addEventListener("click",e=>{if(e.target===bg)bg.remove()});document.body.appendChild(bg);const close=()=>bg.remove();onMount&&onMount(bg.firstChild,close);return close}
+/* Telefonun geri tuşu: açık pencereyi ya da okuma ekranını kapatsın, sayfadan çıkmasın */
+const KATMAN=[];let katmanNo=0;
+function katmanAc(el,kapat){const id=++katmanNo,k={id,el,kapat};KATMAN.push(k);
+  try{const st=history.state;if(st&&st.gec)history.replaceState({katman:id},"",location.href);else history.pushState({katman:id},"",location.href)}catch(e){}
+  return ()=>{const i=KATMAN.indexOf(k);if(i<0)return;KATMAN.splice(i,1);try{if(history.state&&history.state.katman===id)history.replaceState({gec:1},"",location.href)}catch(e){}}}
+window.addEventListener("popstate",()=>{
+  while(KATMAN.length&&!KATMAN[KATMAN.length-1].el.isConnected)KATMAN.pop();
+  const st=history.state||{},ust=KATMAN.pop();
+  if(ust){try{ust.kapat(true)}catch(e){}}
+  const acik=st.katman&&KATMAN.some(k=>k.id===st.katman);
+  if(st.katman&&!acik){try{history.replaceState({gec:1},"",location.href)}catch(e){}}
+  else if(!ust&&st.gec)history.back()});
+function sheet(html,onMount){const bg=document.createElement("div");bg.className="sheet-bg";bg.innerHTML=`<div class="sheet" role="dialog">${html}</div>`;
+  let birak=null;const close=()=>{bg.remove();birak&&birak()};
+  bg.addEventListener("click",e=>{if(e.target===bg)close()});document.body.appendChild(bg);birak=katmanAc(bg,()=>bg.remove());onMount&&onMount(bg.firstChild,close);return close}
 function confirmSheet(title,body,okText,fn){sheet(`<h3>${esc(title)}</h3><p class="muted">${esc(body)}</p><div class="row" style="gap:8px"><button class="btn red" id="y">${esc(okText)}</button><button class="btn ghost" id="n">Vazgeç</button></div>`,(sh,close)=>{sh.querySelector("#n").onclick=close;sh.querySelector("#y").onclick=()=>{close();fn()}})}
 
 /* ============ KAYIT ============ */

@@ -135,7 +135,8 @@ async function okuyucu(k,opt={}){
 
   // kapat / okudum
   let yerKaydetDis=()=>{};
-  const kapat=()=>{try{yerKaydetDis()}catch(e){}sesDur();kayDur();mikKapat();au.src="";sonraki.src="";el.remove();document.body.style.overflow=""};
+  let katmanBirak=null;const kapat=()=>{try{yerKaydetDis()}catch(e){}sesDur();kayDur();mikKapat();au.src="";sonraki.src="";el.remove();document.body.style.overflow="";katmanBirak&&katmanBirak()};
+  katmanBirak=katmanAc(el,kapat);
   el.querySelector("#kapat").onclick=kapat;
   const ok=el.querySelector("#okudum");ok&&(ok.onclick=()=>{kapat();S.cuz[k]={d:true,t:Date.now()};save();toast(k+". cüz okundu olarak işaretlendi. Allah kabul etsin.");render()});
 
