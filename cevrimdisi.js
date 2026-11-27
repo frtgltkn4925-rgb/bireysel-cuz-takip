@@ -37,3 +37,5 @@ function cdSerit(){let s=document.getElementById("cdSerit");if(!s){s=document.cr
 window.addEventListener("online",()=>{cdSerit();toast("İnternet bağlantısı geldi")});window.addEventListener("offline",cdSerit);setTimeout(cdSerit,500);
 /* İnternet varken bu ayın ve gelecek ayın vakitlerini sessizce hazırla (ay başında internet yoksa vakitler kaybolmasın) */
 setTimeout(async()=>{if(!navigator.onLine||!S.il)return;const g=new Date();for(let i=0;i<2;i++){const d=new Date(g.getFullYear(),g.getMonth()+i,1);try{await vakitAyi(d.getFullYear(),d.getMonth()+1)}catch(e){}}},6000);
+/* Uygulama doğrudan Ayarlar sayfasında açıldıysa ilk çizim bu dosya yüklenmeden yapılmıştır; bölümü şimdi tamamla */
+if(typeof cur!=="undefined"&&cur.v==="ayarlar")render();

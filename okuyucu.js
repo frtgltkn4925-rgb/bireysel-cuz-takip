@@ -98,7 +98,11 @@ async function okuyucu(k,opt={}){
     const nx=liste[i+1];if(nx&&!(await SDB.al(imam+"/"+nx.g))){sonraki.src=sesAdres(imam,nx.g,0);sonraki.load()}};
   au.onended=()=>{if(caliyor)cal(sira+1)};
   au.onerror=()=>{if(sira<0||!caliyor)return;if(deneme>=9)deneme=-1;deneme++;if(deneme<4){au.src=sesAdres(imam,liste[sira].g,deneme);au.play().catch(()=>{})}else{bildir("Bu ayetin sesi açılamadı, sonrakine geçiliyor");cal(sira+1)}};
-  const sesDevam=()=>{if(!liste.length)return;kayDur();if(sira<0)cal(0);else{caliyor=true;dinleB.textContent="⏸";au.play().catch(()=>cal(sira))}};
+  // ▶ ekranda görünen ayetten başlar; durdurulan ayet ekranda değilse (sayfa kaydırıldıysa) yine görünen ayetten başlar
+  let ustAyetDis=()=>0;
+  const gorunurMu=g=>{const a=M.querySelector(`[data-g="${g}"]`);if(!a)return false;const r=a.getBoundingClientRect(),m=M.getBoundingClientRect();return r.bottom>m.top&&r.top<m.bottom};
+  const sesDevam=()=>{if(!liste.length)return;kayDur();const i=Math.max(0,liste.findIndex(x=>x.g===ustAyetDis()));
+    if(sira<0||!gorunurMu(liste[sira].g))cal(i);else{caliyor=true;dinleB.textContent="⏸";au.play().catch(()=>cal(sira))}};
   dinleB.onclick=()=>caliyor?sesDur():sesDevam();
   el.querySelector("#imam").onchange=async e=>{imam=e.target.value;ls.set("no.imam",imam);indirDurum();if(caliyor)cal(sira)};
   M.onclick=e=>{if(el.classList.contains("gizli")){el.classList.remove("gizli");return}const sp=e.target.closest(".ay");if(!sp)return;const i=liste.findIndex(x=>x.g===+sp.dataset.g);if(i<0)return;const it=liste[i];
@@ -152,6 +156,7 @@ async function okuyucu(k,opt={}){
     M.addEventListener("scroll",()=>{clearTimeout(yerT);yerT=setTimeout(()=>{if(Date.now()<geriYukle&&!elle)return;const g=ustAyet();if(g)yerKaydet(g)},500)},{passive:true});
     const disKaydet=()=>{if(el.isConnected&&(Date.now()>=geriYukle||elle))yerKaydetDis()};
     document.addEventListener("visibilitychange",()=>{if(document.hidden)disKaydet()});window.addEventListener("pagehide",disKaydet);
+    ustAyetDis=ustAyet;
     yerKaydetDis=()=>{const g=caliyor&&sira>=0?liste[sira].g:ustAyet();if(g)yerKaydet(g)};
     const ust=x=>x.getBoundingClientRect().top-M.getBoundingClientRect().top+M.scrollTop;
     let hedef=opt.sure?M.querySelector("#s"+opt.sure):opt.sayfa?M.querySelector("#sf"+opt.sayfa):null,y=null,sp=null;

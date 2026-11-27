@@ -303,7 +303,7 @@ function vAyarlar(el){
    <label class="row between" style="margin-top:10px"><span>Meali göster (Elmalılı)</span><input type="checkbox" id="ml" ${S.meal?"checked":""}></label>
    <label class="row between" style="margin-top:8px"><span>Okunuşu göster</span><input type="checkbox" id="ok" ${S.okunus?"checked":""}></label>
    <label class="row between" style="margin-top:8px"><span>Tefsiri göster (Celâleyn)</span><input type="checkbox" id="tf" ${S.tefsir?"checked":""}></label></div>
-  <h2 class="sec">İnternetsiz kullanım</h2>${cdKart()}
+  <h2 class="sec">İnternetsiz kullanım</h2>${typeof cdKart==="function"?cdKart():""}
   <h2 class="sec">Açılış</h2>
   <div class="card"><label class="row between"><span>Açılışta besmele ve selam</span><input type="checkbox" id="acs" ${S.acilis!==false?"checked":""}></label>
    <p class="muted small" style="margin:6px 0 10px">Uygulama her açıldığında besmele hafız sesinden okunur; “${ACILIS_SELAM}” yazısı ekranda görünür.</p><button class="btn sm ghost" id="acd">Şimdi dinle</button></div>
