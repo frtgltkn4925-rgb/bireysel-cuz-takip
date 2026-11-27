@@ -16,7 +16,7 @@ const MUSHAF_CSS=`
 .sfb .sn{font-size:17px}
 .cerceve{background:#fdf6e3;border:5px solid #8b7a50;box-shadow:inset 0 0 0 3px #fdf6e3,inset 0 0 0 5px #8b7a50,inset 0 0 0 9px #fdf6e3,inset 0 0 0 10px #8b7a50,0 2px 10px rgba(80,60,20,.15);padding:18px 16px}
 .sfn{text-align:center;font-family:'Amiri',serif;color:#5b4b2a;font-size:14px;margin-top:6px}
-.ayetler{direction:rtl;text-align:justify;text-align-last:justify;font-family:'Amiri Quran','Amiri','Scheherazade New','Noto Naskh Arabic','Geeza Pro',serif;font-size:var(--yb,30px);line-height:var(--sa,2.25);color:#111;word-spacing:1px}
+.ayetler{direction:rtl;text-align:justify;text-align-last:center;font-family:'Scheherazade Yerel','Scheherazade New','Amiri','Noto Naskh Arabic','Geeza Pro',serif;font-size:var(--yb,30px);line-height:var(--sa,2.25);color:#111;word-spacing:1px}
 .ayetler.son{text-align-last:center}
 .ay{border-radius:8px;transition:background .25s}
 .ay.su{background:#f1dc9e}.ay.mealde{background:#e8dcb5;box-shadow:0 0 0 2px #d9c48a}
@@ -24,7 +24,7 @@ const MUSHAF_CSS=`
 .vk{color:#c0262d;font-size:.8em}
 .no{display:inline-grid;place-items:center;width:1.25em;height:1.25em;border-radius:50%;background:#6b5a35;color:#f6e7bb;font-family:'Amiri',serif;font-size:.5em;line-height:1;vertical-align:middle;margin:0 .2em;box-shadow:0 0 0 .12em #fdf6e3,0 0 0 .2em #6b5a35}
 .sb{margin:6px 0 10px;text-align:center;border:3px double #8b7a50;border-radius:10px;padding:4px 8px;background:#f4e9c8;font-family:'Amiri',serif;color:#3f3418;font-size:calc(var(--yb,30px)*.72);direction:rtl}
-.bsm{font-family:'Amiri Quran','Amiri',serif;text-align:center;font-size:calc(var(--yb,30px)*.95);color:#111;margin:0 0 4px;direction:rtl}
+.bsm{font-family:'Scheherazade Yerel','Amiri',serif;text-align:center;font-size:calc(var(--yb,30px)*.95);color:#111;margin:0 0 4px;direction:rtl}
 .lat{display:block;direction:ltr;text-align:left;font:italic 15px/1.6 Georgia,serif;color:#5b5240;margin:2px 0 8px;text-align-last:auto}
 .ayetler.latinli{text-align-last:auto}.ayetler.latinli .ay{display:block;padding:4px 2px;border-bottom:1px dashed #e4dcc8}`;
 const SURE_AR=["الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"];
@@ -214,8 +214,8 @@ function mealGoster(o){const ad=SURELER[o.s-1][0];
 document.head.insertAdjacentHTML("beforeend",`<style>.kel{background:linear-gradient(135deg,#0f766e,#134e4a);color:#fff;border-radius:14px;padding:12px 14px;margin-top:12px;position:relative}
 .kel-e{font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.75}.kel .kel-e{color:#ccfbf1}
 .kel-t{font-size:22px;font-weight:800;line-height:1.35;margin-top:2px;padding-right:70px}
-.kel-a{position:absolute;right:14px;top:10px;font-family:"Amiri Quran","Scheherazade New",serif;font-size:20px;opacity:.8}
-.meal-ar{font-family:"Amiri Quran","Scheherazade New",serif;font-size:26px;line-height:1.9;margin:12px 0 8px;text-align:right;color:var(--ink)}
+.kel-a{position:absolute;right:14px;top:10px;font-family:"Scheherazade Yerel","Scheherazade New",serif;font-size:20px;opacity:.8}
+.meal-ar{font-family:"Scheherazade Yerel","Scheherazade New",serif;font-size:26px;line-height:1.9;margin:12px 0 8px;text-align:right;color:var(--ink)}
 .meal-t{font-size:17px;line-height:1.65;color:var(--ink);background:var(--soft,#f3efe4);border-radius:12px;padding:12px 14px;min-height:48px}
 .ayah .a{cursor:pointer}</style>`);
 
